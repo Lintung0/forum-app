@@ -45,24 +45,69 @@ class CommentController extends Controller
             );
         }
 
+        $parentId = $request->input('parent_id');
+        $parentComment = null;
+
+        // Validasi parent_id: pastikan comment exists dan ada di post yang sama
+        if ($parentId) {
+            $parentComment = Comment::find($parentId);
+            if (! $parentComment || $parentComment->post_id !== $post->id) {
+                return $this->errorResponse(
+                    'Komentar induk tidak ditemukan di post ini.',
+                    null,
+                    422
+                );
+            }
+        }
+
         try {
+            $actorId = $request->user()->id;
+
             $comment = Comment::create([
                 'post_id'   => $post->id,
-                'user_id'   => $request->user()->id,
-                'parent_id' => $request->input('parent_id'),
+                'user_id'   => $actorId,
+                'parent_id' => $parentId,
                 'body'      => $request->input('body'),
             ]);
 
             $comment->load('user');
 
+            // Logika Notifikasi Terpusat
+            if ($parentComment) {
+                // 1. Kirim notifikasi 'new_reply' ke pemilik parent comment (jika bukan diri sendiri)
+                if ($parentComment->user_id !== $actorId) {
+                    NotificationService::send(
+                        $parentComment->user_id,
+                        $actorId,
+                        'new_reply',
+                        $comment->id,
+                        'comment'
+                    );
+                }
 
-            NotificationService::send(
-                $post->user_id,
-                $request->user()->id,
-                'new_comment',
-                $comment->id,
-                'comment'
-            );
+                // 2. Kirim notifikasi 'new_comment' ke pemilik post 
+                // (jika pemilik post beda dengan pemilik parent comment & bukan diri sendiri)
+                if ($post->user_id !== $parentComment->user_id && $post->user_id !== $actorId) {
+                    NotificationService::send(
+                        $post->user_id,
+                        $actorId,
+                        'new_comment',
+                        $comment->id,
+                        'comment'
+                    );
+                }
+            } else {
+                // Top-level comment: Kirim notifikasi 'new_comment' ke pemilik post (jika bukan diri sendiri)
+                if ($post->user_id !== $actorId) {
+                    NotificationService::send(
+                        $post->user_id,
+                        $actorId,
+                        'new_comment',
+                        $comment->id,
+                        'comment'
+                    );
+                }
+            }
 
             return $this->createdResponse(
                 new CommentResource($comment),
@@ -157,25 +202,27 @@ class CommentController extends Controller
             ]);
         }
 
-        $comment->delete();
+        // Implementasi soft delete manual
+        $comment->update(['is_deleted' => true]);
 
         return $this->noContentResponse('Komentar berhasil dihapus.');
     }
+
     public function forceDestroy(Request $request, Comment $comment): JsonResponse
     {
         if ($comment->is_accepted) {
             $post = Post::find($comment->post_id);
-        if ($post && $post->accepted_answer_id === $comment->id) {
-            $post->update([
+            if ($post && $post->accepted_answer_id === $comment->id) {
+                $post->update([
                     'is_answered'        => false,
                     'accepted_answer_id' => null,
                 ]);
             }
         }
 
-        $comment->delete();
+        // Implementasi soft delete manual
+        $comment->update(['is_deleted' => true]);
 
         return $this->noContentResponse('Komentar berhasil dihapus oleh moderator.');
     }
-
 }

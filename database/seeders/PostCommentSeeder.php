@@ -30,7 +30,7 @@ class PostCommentSeeder extends Seeder
 
             $tagLaravel = Tag::where('slug', 'laravel')->firstOrFail();
             $tagPHP     = Tag::where('slug', 'php')->firstOrFail();
-            $tagVue     = Tag::where('slug', 'vue-js')->firstOrFail();
+            $tagVue     = Tag::where('slug', 'vuejs')->firstOrFail();
             $tagMySQL   = Tag::where('slug', 'mysql')->firstOrFail();
             $tagDocker  = Tag::where('slug', 'docker')->firstOrFail();
             $tagAPI     = Tag::where('slug', 'rest-api')->firstOrFail();
