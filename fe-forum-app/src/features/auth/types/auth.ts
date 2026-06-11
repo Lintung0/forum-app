@@ -1,0 +1,14 @@
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+}
