@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Vote\VoteRequest;
 use App\Models\Comment;
 use App\Models\Post;
 use App\Models\Vote;
@@ -16,14 +17,8 @@ class VoteController extends Controller
 {
     use ApiResponse;
 
-    public function store(Request $request): JsonResponse
+    public function store(VoteRequest $request): JsonResponse
     {
-        $request->validate([
-            'target_id'   => 'required|uuid',
-            'target_type' => 'required|in:post,comment',
-            'vote_type'   => 'required|in:upvote,downvote',
-        ]);
-
         $voter      = $request->user();
         $targetId   = $request->target_id;
         $targetType = $request->target_type;
@@ -42,9 +37,11 @@ class VoteController extends Controller
             $contentOwner = $target->user;
             $isOwnContent = $contentOwner && ($contentOwner->id === $voter->id);
 
-            $existingVote    = Vote::where('user_id', $voter->id)
+            // FIX 1: tambah lockForUpdate() untuk mencegah race condition double insert
+            $existingVote = Vote::where('user_id', $voter->id)
                 ->where('target_id', $targetId)
                 ->where('target_type', $targetType)
+                ->lockForUpdate()
                 ->first();
 
             $message         = '';
@@ -115,6 +112,9 @@ class VoteController extends Controller
                 );
             }
 
+            // FIX 2: refresh agar vote_score tidak stale
+            $target->refresh();
+
             return $this->successResponse(['vote_score' => $target->vote_score], $message);
         });
     }
@@ -125,13 +125,31 @@ class VoteController extends Controller
             return $this->forbiddenResponse('Anda tidak memiliki akses untuk menghapus vote ini.');
         }
 
-        return DB::transaction(function () use ($vote) {
+        return DB::transaction(function () use ($vote, $request) {
             $targetModelClass = $vote->target_type === 'post' ? Post::class : Comment::class;
             $target           = $targetModelClass::lockForUpdate()->findOrFail($vote->target_id);
 
-            $scoreChange = $vote->vote_type === 'upvote' ? -1 : 1;
+            $target->load('user');
+            $contentOwner = $target->user;
+            $voter        = $request->user();
+            $isOwnContent = $contentOwner && ($contentOwner->id === $voter->id);
+
+            $voteType = $vote->vote_type;
+
             $vote->delete();
-            $target->increment('vote_score', $scoreChange);
+
+            if ($voteType === 'upvote') {
+                $target->decrement('vote_score');
+                if (! $isOwnContent && $contentOwner) {
+                    $contentOwner->deductReputation(10, 'upvote_removed', $target->id);
+                }
+            } else {
+                $target->increment('vote_score');
+                if (! $isOwnContent && $contentOwner) {
+                    $contentOwner->addReputation(5, 'downvote_removed', $target->id);
+                }
+            }
+
             $target->refresh();
 
             return $this->successResponse(
@@ -141,3 +159,4 @@ class VoteController extends Controller
         });
     }
 }
+
