@@ -101,6 +101,17 @@ class Post extends Model
         return $this->hasMany(Bookmark::class, 'post_id');
     }
 
+    public function currentUserVote(): HasMany
+    {
+        return $this->hasMany(Vote::class, 'target_id')
+            ->where('target_type', 'post');
+    }
+
+    public function currentUserBookmark(): HasMany
+    {
+        return $this->hasMany(Bookmark::class, 'post_id');
+    }
+
     // ────────────────────────────────────────────────────────
     // HELPER METHODS
     // ────────────────────────────────────────────────────────

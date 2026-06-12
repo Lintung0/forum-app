@@ -13,8 +13,15 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        // Hitung jumlah followers, following, dan post milik user
+        $user->load('roles');
         $user->loadCount(['followers', 'following', 'posts']);
+
+        $role = 'user';
+        if ($user->roles->contains('name', 'admin')) {
+            $role = 'admin';
+        } elseif ($user->roles->contains('name', 'moderator')) {
+            $role = 'moderator';
+        }
 
         $data = [
             'id' => $user->id,
@@ -23,6 +30,7 @@ class UserController extends Controller
             'bio' => $user->bio,
             'reputation_points' => $user->reputation_points,
             'level' => $user->level,
+            'role' => $role,
             'followers_count' => $user->followers_count,
             'following_count' => $user->following_count,
             'posts_count' => $user->posts_count,

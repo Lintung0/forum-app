@@ -14,6 +14,8 @@ class Comment extends Model
 
     protected $table = 'comments';
 
+    const UPDATED_AT = null;
+
     protected $fillable = [
         'post_id',
         'user_id',
@@ -21,6 +23,7 @@ class Comment extends Model
         'body',
         'vote_score',
         'is_accepted',
+        'is_deleted',
     ];
 
     protected function casts(): array
@@ -28,6 +31,7 @@ class Comment extends Model
         return [
             'vote_score'  => 'integer',
             'is_accepted' => 'boolean',
+            'is_deleted'  => 'boolean',
             'created_at'  => 'datetime',
             'updated_at'  => 'datetime',
         ];
@@ -82,5 +86,15 @@ class Comment extends Model
     public function isReply(): bool
     {
         return $this->parent_id !== null;
+    }
+
+    public function isSoftDeleted(): bool
+    {
+        return (bool) $this->is_deleted;
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_deleted', false);
     }
 }

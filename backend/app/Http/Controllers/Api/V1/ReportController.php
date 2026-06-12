@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Report\StoreReportRequest;
 use App\Models\Report;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -12,21 +13,14 @@ class ReportController extends Controller
 {
     use ApiResponse;
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreReportRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'target_id'   => ['required', 'uuid'],
-            'target_type' => ['required', 'in:post,comment,user'],
-            'reason'      => ['required', 'string', 'max:100'],
-            'description' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
-        // Tidak bisa report diri sendiri
         if ($validated['target_type'] === 'user' && $validated['target_id'] === $request->user()->id) {
             return $this->errorResponse('Tidak bisa melaporkan diri sendiri.', null, 422);
         }
 
-        // Cek duplikat report
         $isDuplicate = Report::where('reporter_id', $request->user()->id)
             ->where('target_id', $validated['target_id'])
             ->where('target_type', $validated['target_type'])

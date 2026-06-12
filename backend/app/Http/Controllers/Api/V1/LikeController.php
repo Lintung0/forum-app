@@ -41,6 +41,7 @@ class LikeController extends Controller
             $existingLike = Like::where('user_id', $user->id)
                 ->where('target_id', $targetId)
                 ->where('target_type', $targetType)
+                ->lockForUpdate()
                 ->first();
 
             $isLiked = false;

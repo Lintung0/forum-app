@@ -14,6 +14,7 @@ use App\Services\NotificationService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class PostController extends Controller
@@ -22,9 +23,11 @@ class PostController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $user = $request->user();
+
         $posts = Post::query()
             ->with(['user', 'category', 'tags'])
-            ->withCount('comments')
+            ->withCount(['comments' => fn($q) => $q->active()])
             ->when(
                 $request->input('status', 'open') !== 'all',
                 fn($q) => $q->where('status', $request->input('status', 'open'))
@@ -38,6 +41,10 @@ class PostController extends Controller
                 fn($q) => $q->whereHas('tags', fn($tq) => $tq->where('slug', $request->input('tag')))
             )
             ->when(
+                $request->filled('user_id'),
+                fn($q) => $q->where('user_id', $request->input('user_id'))
+            )
+            ->when(
                 $request->filled('q'),
                 fn($q) => $q->where(function ($query) use ($request) {
                     $kw = '%' . $request->input('q') . '%';
@@ -47,11 +54,18 @@ class PostController extends Controller
             )
             ->when(true, function ($q) use ($request) {
                 match ($request->input('sort', 'newest')) {
-                    'oldest' => $q->orderBy('created_at', 'asc'),
-                    'votes'  => $q->orderByDesc('vote_score'),
-                    'views'  => $q->orderByDesc('view_count'),
-                    default  => $q->orderByDesc('created_at'),
+                    'oldest', 'latest' => $q->orderBy('created_at', $request->input('sort') === 'latest' ? 'desc' : 'asc'),
+                    'popular', 'votes' => $q->orderByDesc('vote_score'),
+                    'views'            => $q->orderByDesc('view_count'),
+                    'unanswered'       => $q->where('is_answered', false)->orderByDesc('created_at'),
+                    default            => $q->orderByDesc('created_at'),
                 };
+            })
+            ->when($user, function ($q) use ($user) {
+                $q->with([
+                    'currentUserVote' => fn($vq) => $vq->where('user_id', $user->id),
+                    'currentUserBookmark' => fn($bq) => $bq->where('user_id', $user->id),
+                ]);
             })
             ->paginate(min((int) $request->input('per_page', 15), 50));
 
@@ -114,7 +128,11 @@ class PostController extends Controller
         $user = $request->user();
 
         if (! $user || ! $post->isOwnedBy($user)) {
-            $post->incrementViewCount();
+            $cacheKey = 'post_view:' . $post->id . ':' . $request->ip();
+            if (! Cache::has($cacheKey)) {
+                $post->incrementViewCount();
+                Cache::put($cacheKey, true, now()->addMinutes(15));
+            }
         }
 
         $post->load([
@@ -122,9 +140,16 @@ class PostController extends Controller
             'category',
             'tags',
             'acceptedAnswer.user',
-            'topLevelComments' => fn($q) => $q->with(['user', 'replies.user'])->withCount('replies'),
+            'topLevelComments' => fn($q) => $q->active()->with(['user', 'replies' => fn($rq) => $rq->active()->with('user')])->withCount(['replies' => fn($rq) => $rq->active()]),
         ]);
-        $post->loadCount('comments');
+        $post->loadCount(['comments' => fn($q) => $q->active()]);
+
+        if ($user) {
+            $post->load([
+                'currentUserVote' => fn($q) => $q->where('user_id', $user->id),
+                'currentUserBookmark' => fn($q) => $q->where('user_id', $user->id),
+            ]);
+        }
 
         return $this->successResponse(
             new PostResource($post),
@@ -252,7 +277,7 @@ class PostController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($post, $comment) {
+            DB::transaction(function () use ($post, $comment, $request) {
                 if ($post->accepted_answer_id) {
                     Comment::where('id', $post->accepted_answer_id)->update(['is_accepted' => false]);
                 }
@@ -262,16 +287,15 @@ class PostController extends Controller
                     'accepted_answer_id' => $comment->id,
                     'is_answered'        => true,
                 ]);
-            });
 
-            // Wire notifikasi ke pemilik comment
-            NotificationService::send(
-                $comment->user_id,
-                $request->user()->id,
-                'answer_accepted',
-                $comment->id,
-                'comment'
-            );
+                NotificationService::send(
+                    $comment->user_id,
+                    $request->user()->id,
+                    'answer_accepted',
+                    $comment->id,
+                    'comment'
+                );
+            });
 
             return $this->successResponse(null, 'Jawaban berhasil diterima.');
 
@@ -291,6 +315,7 @@ class PostController extends Controller
         }
 
         $post->update(['status' => 'closed']);
+        $post->refresh()->load(['user', 'category', 'tags']);
 
         return $this->successResponse(new PostResource($post), 'Post berhasil ditutup oleh moderator.');
     }
@@ -302,6 +327,7 @@ class PostController extends Controller
         }
 
         $post->update(['status' => 'open']);
+        $post->refresh()->load(['user', 'category', 'tags']);
 
         return $this->successResponse(new PostResource($post), 'Post berhasil dibuka ulang oleh moderator.');
     }

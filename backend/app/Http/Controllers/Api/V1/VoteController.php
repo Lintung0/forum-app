@@ -37,6 +37,10 @@ class VoteController extends Controller
             $contentOwner = $target->user;
             $isOwnContent = $contentOwner && ($contentOwner->id === $voter->id);
 
+            if ($isOwnContent) {
+                return $this->errorResponse('Tidak bisa vote konten sendiri.', null, 422);
+            }
+
             // FIX 1: tambah lockForUpdate() untuk mencegah race condition double insert
             $existingVote = Vote::where('user_id', $voter->id)
                 ->where('target_id', $targetId)

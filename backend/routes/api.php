@@ -112,6 +112,7 @@ Route::prefix('v1/admin')->name('api.v1.admin.')->middleware(['auth:sanctum', 'b
     Route::patch('tags/{tag}', [TagController::class, 'update']);
     Route::delete('tags/{tag}',[TagController::class, 'destroy'])->name('tags.destroy');
 
+    Route::get('users',                        [AdminController::class, 'listUsers']);
     Route::patch('users/{user}/ban',         [AdminController::class, 'banUser']);
     Route::patch('users/{user}/unban',       [AdminController::class, 'unbanUser']);
     Route::get('reports',                    [ReportController::class, 'index']);

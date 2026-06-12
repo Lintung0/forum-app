@@ -20,7 +20,7 @@ class UpdatePostRequest extends FormRequest
             'body'        => ['sometimes', 'string', 'min:20'],
             'category_id' => ['sometimes', 'uuid', 'exists:categories,id'],
             'tags'        => ['nullable', 'array', 'max:5'],
-            'tags.*'      => ['uuid', 'exists:tags,id'],
+            'tags.*'      => ['required', 'string', 'min:1'],
             'reason'      => ['nullable', 'string', 'max:255'],
         ];
     }
