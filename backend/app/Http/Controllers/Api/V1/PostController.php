@@ -74,7 +74,18 @@ class PostController extends Controller
                 ]);
 
                 if ($request->filled('tags')) {
-                    $tagIds = $request->input('tags');
+                    $tagIds = collect($request->input('tags'))->map(function ($tag) {
+                        // Support nama tag (string) atau UUID
+                        if (!\Illuminate\Support\Str::isUuid($tag)) {
+                            $model = Tag::firstOrCreate(
+                                ['slug' => \Illuminate\Support\Str::slug($tag)],
+                                ['name' => $tag]
+                            );
+                            return $model->id;
+                        }
+                        return $tag;
+                    })->toArray();
+
                     $post->tags()->attach($tagIds);
                     Tag::whereIn('id', $tagIds)->increment('usage_count');
                 }
@@ -156,7 +167,16 @@ class PostController extends Controller
 
                 if ($request->has('tags')) {
                     $oldTagIds = $post->tags()->pluck('tags.id')->toArray();
-                    $newTagIds = $request->input('tags', []);
+                    $newTagIds = collect($request->input('tags', []))->map(function ($tag) {
+                        if (!\Illuminate\Support\Str::isUuid($tag)) {
+                            $model = Tag::firstOrCreate(
+                                ['slug' => \Illuminate\Support\Str::slug($tag)],
+                                ['name' => $tag]
+                            );
+                            return $model->id;
+                        }
+                        return $tag;
+                    })->toArray();
 
                     $removedTagIds = array_diff($oldTagIds, $newTagIds);
                     $addedTagIds   = array_diff($newTagIds, $oldTagIds);

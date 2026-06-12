@@ -24,7 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         // ─── Stateful API (diperlukan Sanctum) ──────────────────
-        $middleware->statefulApi();
+        // $middleware->statefulApi(); // Dinonaktifkan: menyebabkan 419 CSRF pada request API
 
         // ─── Custom Middleware Aliases ───────────────────────────
         $middleware->alias([

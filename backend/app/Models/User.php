@@ -16,6 +16,11 @@ class User extends Authenticatable
 
     protected $table = 'users';
 
+    public function getRouteKeyName(): string
+    {
+        return 'username';
+    }
+
     /**
      * Kolom yang boleh diisi secara mass assignment.
      */
