@@ -24,3 +24,5 @@ yarn-error.log
 
 # Duplicate nested project folder
 /forum-app/
+".next/" 
+"node_modules/" 
