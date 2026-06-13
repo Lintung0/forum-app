@@ -12,12 +12,15 @@ export default async function PostsPage() {
     });
 
     if (response.ok) {
-      const text = await response.text();
-      const jsonStart = text.indexOf('{');
-      if (jsonStart === -1) throw new Error('Response bukan JSON');
-
-      const data = JSON.parse(text.slice(jsonStart));
-      posts = data.data ?? [];
+      const json = await response.json();
+      const raw = json.data;
+      if (Array.isArray(raw)) {
+        posts = raw;
+      } else if (raw?.items && Array.isArray(raw.items)) {
+        posts = raw.items;
+      } else {
+        posts = [];
+      }
     }
   } catch (error) {
     console.error('Gagal fetch posts:', error);

@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -13,30 +12,23 @@ import { VoteBlock } from './vote-block';
 interface CommentItemProps {
   comment: Comment;
   idx: number;
-  onDeleteComment: (commentId: string) => void;
-  onEditComment: (commentId: string, newBody: string) => void;
+  onDeleteComment: (commentId: number) => void;
+  onEditComment: (commentId: number, newBody: string) => void;
 }
 
 export function CommentItem({ comment, idx, onDeleteComment, onEditComment }: CommentItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(comment.body);
-  // useEffect agar tidak hydration mismatch
-  const [isMyComment, setIsMyComment] = useState(false);
 
-  useEffect(() => {
-    const stored = localStorage.getItem('auth_user');
-    const currentUser = stored ? JSON.parse(stored) : null;
-    setIsMyComment(currentUser?.id === comment.user?.id);
-  }, [comment.user?.id]);
+  // ID User Dummy kita (anggap ini ID user yang sedang login di frontend)
+  const CURRENT_USER_ID = 999; 
+  const isMyComment = comment.user?.id === CURRENT_USER_ID;
 
   const handleSaveEdit = () => {
     if (!editText.trim()) return;
     onEditComment(comment.id, editText);
     setIsEditing(false);
   };
-
-  // FIX LOGIC: Validasi jalur URL profile agar tidak menghasilkan '/profile/undefined'
-  const profileHref = comment.user?.username ? `/profile/${comment.user.username}` : '#';
 
   return (
     <Card
@@ -55,27 +47,17 @@ export function CommentItem({ comment, idx, onDeleteComment, onEditComment }: Co
         {/* Konten Utama */}
         <div className="flex-1 p-4 space-y-2.5 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-
-            {/* Avatar — klik ke profile (Aman dari undefined) */}
-            <Link href={profileHref}>
-              <Avatar className="w-5 h-5 cursor-pointer hover:opacity-80 transition-opacity border border-transparent hover:border-[#e95723]/40">
-                <AvatarImage src={comment.user?.avatar_url ?? undefined} />
-                <AvatarFallback className="text-[9px] bg-[#2c323f] text-gray-300 font-bold">
-                  {comment.user?.username?.[0]?.toUpperCase() ?? 'C'}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
-
-            {/* Username — klik ke profile (Aman dari undefined) */}
-            <Link
-              href={profileHref}
-              className="text-xs font-semibold text-gray-300 hover:text-[#e95723] transition-colors"
-            >
+            <Avatar className="w-5 h-5">
+              <AvatarImage src={comment.user?.avatar_url ?? undefined} />
+              <AvatarFallback className="text-[9px] bg-[#2c323f] text-gray-300 font-bold">
+                {comment.user?.username?.[0]?.toUpperCase() ?? 'C'}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-xs font-semibold text-gray-300">
               @{comment.user?.username ?? 'user'}
-            </Link>
-
-            <span className="text-[10px] text-gray-500 tabular-nums font-normal">• #{idx + 1}</span>
-
+            </span>
+            <span className="text-[10px] text-gray-500 tabular-nums font-normal">ÔÇó #{idx + 1}</span>
+            
             {comment.is_accepted && (
               <div className="flex items-center gap-1 ml-auto bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded text-[10px] text-emerald-400 font-semibold tracking-wide">
                 <ShieldCheck className="h-3 w-3" />
@@ -128,6 +110,7 @@ export function CommentItem({ comment, idx, onDeleteComment, onEditComment }: Co
               <Flag className="h-3 w-3" /> Report
             </button>
 
+            {/* Tombol Khusus Pemilik Komentar Dummy */}
             {isMyComment && !isEditing && (
               <div className="flex items-center gap-2 ml-auto border-l border-[#1e222b] pl-2">
                 <button

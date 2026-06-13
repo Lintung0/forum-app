@@ -1,19 +1,23 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, LogIn } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProfileCard } from './components/profile-card';
 import { ActivityTabs } from './components/activity-tabs';
 import { ProfileApiResponse } from './type';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://127.0.0.1:8000';
 
 async function fetchProfileData(): Promise<ProfileApiResponse['data']> {
+    // Aman: fungsi ini hanya dipanggil dari useQuery (client-side)
     const token = localStorage.getItem('auth_token');
 
     if (!token) {
-        throw new Error('Anda belum login.');
+        throw new Error('NOT_LOGGED_IN');
     }
 
     const meRes = await fetch(`${BACKEND_API_URL}/api/v1/auth/me`, {
@@ -24,7 +28,7 @@ async function fetchProfileData(): Promise<ProfileApiResponse['data']> {
     });
 
     if (!meRes.ok) {
-        throw new Error('Sesi login tidak valid.');
+        throw new Error('Sesi login tidak valid. Silakan login kembali.');
     }
 
     const meJson = await meRes.json();
@@ -44,7 +48,7 @@ async function fetchProfileData(): Promise<ProfileApiResponse['data']> {
     const json = await res.json();
 
     if (!res.ok) {
-        throw new Error('Gagal mengambil data profil dari server backend.');
+        throw new Error(json.message || 'Gagal mengambil data profil dari server.');
     }
 
     return {
@@ -55,18 +59,51 @@ async function fetchProfileData(): Promise<ProfileApiResponse['data']> {
 }
 
 export function ProfileView() {
+    // Pastikan komponen hanya query setelah mount di client
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+
     const { data: profile, isLoading, isError, error } = useQuery({
         queryKey: ['profileMe'],
         queryFn: fetchProfileData,
         retry: 1,
         staleTime: 1000 * 60 * 5,
+        enabled: mounted, // query hanya jalan setelah mount → localStorage tersedia
     });
+
+    // Belum mount = hindari flash
+    if (!mounted) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-2">
+                <Loader2 className="h-8 w-8 animate-spin text-[#e95723]" />
+                <p className="text-xs text-gray-500 font-medium">Memuat...</p>
+            </div>
+        );
+    }
 
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-2">
                 <Loader2 className="h-8 w-8 animate-spin text-[#e95723]" />
                 <p className="text-xs text-gray-500 font-medium">Loading profile data...</p>
+            </div>
+        );
+    }
+
+    // Handle kasus belum login
+    if (isError && (error as Error).message === 'NOT_LOGGED_IN') {
+        return (
+            <div className="max-w-md mx-auto my-16 p-6 bg-[#0f1115] border border-[#1e2129] rounded-2xl text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-[#e95723]/10 border border-[#e95723]/20 flex items-center justify-center mx-auto">
+                    <LogIn className="h-6 w-6 text-[#e95723]" />
+                </div>
+                <h3 className="text-sm font-bold text-white">Kamu belum login</h3>
+                <p className="text-xs text-gray-400">Login dulu untuk melihat profil kamu.</p>
+                <Link href="/pages/login">
+                    <Button className="bg-[#e95723] hover:bg-[#d0481b] text-white rounded-xl text-xs font-bold px-6">
+                        Login Sekarang
+                    </Button>
+                </Link>
             </div>
         );
     }

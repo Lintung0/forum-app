@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -16,7 +16,8 @@ async function fetchPublicProfile(username: string) {
     throw new Error('Username tidak valid.');
   }
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+  // Aman: dipanggil hanya setelah mount (enabled: mounted)
+  const token = localStorage.getItem('auth_token');
   const headers: HeadersInit = { 'Accept': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -34,20 +35,24 @@ async function fetchPublicProfile(username: string) {
 
 export default function ProfilePublicView({ username }: { username: string }) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const { data: apiResponse, isLoading, isError, error } = useQuery({
     queryKey: ['publicProfile', username],
     queryFn: () => fetchPublicProfile(username),
     retry: 1,
-    enabled: !!username && username !== 'undefined',
+    enabled: mounted && !!username && username !== 'undefined',
     staleTime: 1000 * 60 * 5,
   });
 
-  if (isLoading) {
+  if (!mounted || isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-2">
         <Loader2 className="h-8 w-8 animate-spin text-[#e95723]" />
-        <p className="text-xs text-gray-500 font-medium">Loading @{username}'s profile...</p>
+        <p className="text-xs text-gray-500 font-medium">
+          {!mounted ? 'Memuat...' : `Loading @${username}'s profile...`}
+        </p>
       </div>
     );
   }

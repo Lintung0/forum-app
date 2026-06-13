@@ -13,12 +13,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const menus = [
-  { name: 'Trending', icon: TrendingUp, href: '#' },
-  { name: 'Discussions', icon: MessageSquare, href: '#' },
+  { name: 'Trending', icon: TrendingUp, href: '/home' },
+  { name: 'Discussions', icon: MessageSquare, href: '/posts' },
   { name: 'Categories', icon: Folder, href: '#' },
   { name: 'Tags', icon: Hash, href: '#' },
-  { name: 'Bookmarks', icon: Bookmark, href: '#' },
-  { name: 'Notifications', icon: Bell, href: '#', badge: 5 },
+  { name: 'Bookmarks', icon: Bookmark, href: '/bookmarks' },
+  { name: 'Notifications', icon: Bell, href: '/notifications', badge: 5 },
   { name: 'Messages', icon: Mail, href: '#', badge: 2 },
 ];
 

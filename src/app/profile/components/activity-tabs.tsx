@@ -34,9 +34,11 @@ export function ActivityTabs({ type, items }: ActivityTabsProps) {
                                         {post.title}
                                     </h4>
                                     <div className="flex items-center gap-2 text-[10px] text-gray-500 mt-1 font-medium">
-                                        <span className="text-[#e95723]/80 bg-[#e95723]/5 px-1.5 py-0.5 rounded border border-[#e95723]/10">
-                                            {post.category.name}
-                                        </span>
+                                        {post.category?.name && (
+                                            <span className="text-[#e95723]/80 bg-[#e95723]/5 px-1.5 py-0.5 rounded border border-[#e95723]/10">
+                                                {post.category.name}
+                                            </span>
+                                        )}
                                         <span>•</span>
                                         <span className="tabular-nums">{post.vote_score} votes</span>
                                     </div>

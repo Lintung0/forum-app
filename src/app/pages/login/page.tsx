@@ -1,44 +1,59 @@
 "use client";
 
-import axios from "axios";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 import LoginView from "./LoginView";
 import { LoginFormData } from "./type";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
+
+const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://127.0.0.1:8000";
 
 export default function LoginPage() {
   const router = useRouter();
 
   const handleLoginSubmit = async (data: LoginFormData) => {
     try {
-      console.log("Nembak ke API Laravel Endpoint: /api/v1/auth/login", data);
-      
-      // Tembak API asli backend Laravel kamu
-      const response = await axios.post("http://localhost:8000/api/v1/auth/login", data, {
+      const res = await fetch(`${BACKEND_API_URL}/api/v1/auth/login`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
+        body: JSON.stringify(data),
       });
 
-      if (response.data.success || response.status === 200) {
-        const token = response.data.data?.token || response.data.data?.access_token;
-        
-        // 1. Tetap simpan ke localStorage agar dibaca oleh Navbar kelompokmu
-        localStorage.setItem("auth_token", token);
-        
-        // 2. Kunci Tambahan: Simpan juga ke Cookie agar bisa ditembus oleh Server Action Next.js
-        Cookies.set("auth_token", token, { expires: 7 }); // Aktif selama 7 hari
+      const json = await res.json();
 
-        alert("Login Berhasil, bro! Selamat datang kembali.");
-        
-        // Redirect otomatis ke halaman utama dan refresh biar Navbar update state login-nya
-        router.push("/home");
-        router.refresh();
+      if (!res.ok) {
+        const message =
+          json?.message ||
+          (json?.errors ? Object.values(json.errors).flat().join(", ") : null) ||
+          "Email atau password salah.";
+        alert(message);
+        return;
       }
-    } catch (error: any) {
-      console.error("Login gagal:", error.response?.data || error.message);
-      alert(error.response?.data?.message || "Email atau password salah, bro!");
+
+      const token = json.data?.token || json.data?.access_token;
+      const user = json.data?.user;
+
+      if (!token) {
+        alert("Login gagal: token tidak ditemukan.");
+        return;
+      }
+
+      // Simpan token & data user
+      localStorage.setItem("auth_token", token);
+      localStorage.setItem("auth_user", JSON.stringify(user ?? {}));
+      Cookies.set("auth_token", token, { expires: 7 });
+
+      // Trigger storage event supaya Navbar langsung update
+      window.dispatchEvent(new Event("storage"));
+
+      router.push("/home");
+      router.refresh();
+
+    } catch (error) {
+      console.error("Login gagal:", error);
+      alert("Tidak dapat terhubung ke server. Pastikan backend Laravel sedang berjalan.");
     }
   };
 

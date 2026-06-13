@@ -15,21 +15,22 @@ const Home: FC = async () => {
     ]);
 
     if (resPosts.ok) {
-      const textPosts = await resPosts.text();
-      const jsonStart = textPosts.indexOf('{');
-      if (jsonStart !== -1) {
-        const postsData = JSON.parse(textPosts.slice(jsonStart));
-        posts = postsData.data ?? (Array.isArray(postsData) ? postsData : []);
+      const json = await resPosts.json();
+      // Struktur: { data: { items: [...], meta: {...} } } atau { data: [...] }
+      const raw = json.data;
+      if (Array.isArray(raw)) {
+        posts = raw;
+      } else if (raw?.items && Array.isArray(raw.items)) {
+        posts = raw.items;
+      } else {
+        posts = [];
       }
     }
 
     if (resTags.ok) {
-      const textTags = await resTags.text();
-      const jsonStart = textTags.indexOf('{');
-      if (jsonStart !== -1) {
-        const tagsData = JSON.parse(textTags.slice(jsonStart));
-        tags = tagsData.data ?? (Array.isArray(tagsData) ? tagsData : []);
-      }
+      const json = await resTags.json();
+      const raw = json.data;
+      tags = Array.isArray(raw) ? raw : (raw?.items ?? []);
     }
   } catch (error) {
     console.error("Koneksi gagal ke API Laravel:", error);
