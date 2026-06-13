@@ -603,7 +603,7 @@ Daftar likes pada sebuah post (paginated).
 ---
 
 ### POST /v1/posts/{postId}/likes
-🔒 Toggle like pada post atau comment.
+🔒 Toggle like pada post.
 
 **Body:**
 ```json
@@ -612,8 +612,6 @@ Daftar likes pada sebuah post (paginated).
   "target_type": "post"
 }
 ```
-
-> `target_type`: `post` atau `comment`
 
 **Response `200`:**
 ```json
@@ -627,8 +625,18 @@ Daftar likes pada sebuah post (paginated).
 
 ---
 
-### DELETE /v1/posts/{postId}/likes
-🔒 Unlike (toggle off).
+### POST /v1/posts/{postId}/comments/{commentId}/likes
+🔒 Toggle like pada komentar.
+
+**Body:**
+```json
+{
+  "target_id": "uuid",
+  "target_type": "comment"
+}
+```
+
+**Response `200`:** sama seperti like post.
 
 ---
 
