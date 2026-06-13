@@ -78,8 +78,8 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'banned', 'thr
     Route::delete('posts/{post}/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
     
-    Route::post('posts/{post}/likes',   [LikeController::class, 'store']);
-    Route::delete('posts/{post}/likes', [LikeController::class, 'destroy']);
+    Route::post('posts/{post}/likes',                    [LikeController::class, 'store']);
+    Route::post('posts/{post}/comments/{comment}/likes', [LikeController::class, 'store']);
 
 
     Route::post('votes',          [VoteController::class, 'store']);
