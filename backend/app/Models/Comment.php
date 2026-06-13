@@ -60,6 +60,12 @@ class Comment extends Model
             ->orderBy('created_at', 'asc');
     }
 
+    public function votes(): HasMany
+    {
+        return $this->hasMany(Vote::class, 'target_id')
+            ->where('target_type', 'comment');
+    }
+
     public function editHistory(): HasMany
     {
         return $this->hasMany(CommentEditHistory::class, 'comment_id')
