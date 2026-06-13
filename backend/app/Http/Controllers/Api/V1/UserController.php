@@ -71,7 +71,7 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        if (auth()->id() !== $user->id) {
+        if ($request->user()->id !== $user->id) {
             return $this->errorResponse('Unauthorized.', 403);
         }
 
@@ -91,7 +91,7 @@ class UserController extends Controller
 
     public function updateAvatar(Request $request, User $user)
     {
-        if (auth()->id() !== $user->id) {
+        if ($request->user()->id !== $user->id) {
             return $this->errorResponse('Unauthorized.', 403);
         }
 
