@@ -37,7 +37,6 @@ class VoteController extends Controller
             $contentOwner = $target->user;
             $isOwnContent = $contentOwner && ($contentOwner->id === $voter->id);
 
-            // FIX 1: tambah lockForUpdate() untuk mencegah race condition double insert
             $existingVote = Vote::where('user_id', $voter->id)
                 ->where('target_id', $targetId)
                 ->where('target_type', $targetType)
@@ -103,16 +102,9 @@ class VoteController extends Controller
             }
 
             if ($notifyNewUpvote && $contentOwner) {
-                NotificationService::send(
-                    $contentOwner->id,
-                    $voter->id,
-                    'new_upvote',
-                    $target->id,
-                    $targetType
-                );
+                NotificationService::send($contentOwner->id, $voter->id, 'new_upvote', $target->id, $targetType);
             }
 
-            // FIX 2: refresh agar vote_score tidak stale
             $target->refresh();
 
             return $this->successResponse(['vote_score' => $target->vote_score], $message);
@@ -133,8 +125,7 @@ class VoteController extends Controller
             $contentOwner = $target->user;
             $voter        = $request->user();
             $isOwnContent = $contentOwner && ($contentOwner->id === $voter->id);
-
-            $voteType = $vote->vote_type;
+            $voteType     = $vote->vote_type;
 
             $vote->delete();
 
@@ -152,11 +143,7 @@ class VoteController extends Controller
 
             $target->refresh();
 
-            return $this->successResponse(
-                ['vote_score' => $target->vote_score],
-                'Vote berhasil dihapus.'
-            );
+            return $this->successResponse(['vote_score' => $target->vote_score], 'Vote berhasil dihapus.');
         });
     }
 }
-

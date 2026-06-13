@@ -22,10 +22,7 @@ class CommentController extends Controller
     public function index(Request $request, Post $post): JsonResponse
     {
         $comments = $post->topLevelComments()
-            ->with([
-                'user',
-                'replies' => fn($q) => $q->with('user')->orderBy('created_at'),
-            ])
+            ->with(['user', 'replies' => fn($q) => $q->with('user')->orderBy('created_at')])
             ->withCount('replies')
             ->paginate(min((int) $request->input('per_page', 20), 50));
 
@@ -38,25 +35,16 @@ class CommentController extends Controller
     public function store(StoreCommentRequest $request, Post $post): JsonResponse
     {
         if (! $post->isOpen()) {
-            return $this->errorResponse(
-                'Tidak bisa berkomentar pada post yang sudah ditutup.',
-                null,
-                422
-            );
+            return $this->errorResponse('Tidak bisa berkomentar pada post yang sudah ditutup.', null, 422);
         }
 
-        $parentId = $request->input('parent_id');
+        $parentId      = $request->input('parent_id');
         $parentComment = null;
 
-        // Validasi parent_id: pastikan comment exists dan ada di post yang sama
         if ($parentId) {
             $parentComment = Comment::find($parentId);
             if (! $parentComment || $parentComment->post_id !== $post->id) {
-                return $this->errorResponse(
-                    'Komentar induk tidak ditemukan di post ini.',
-                    null,
-                    422
-                );
+                return $this->errorResponse('Komentar induk tidak ditemukan di post ini.', null, 422);
             }
         }
 
@@ -72,47 +60,20 @@ class CommentController extends Controller
 
             $comment->load('user');
 
-            // Logika Notifikasi Terpusat
             if ($parentComment) {
-                // 1. Kirim notifikasi 'new_reply' ke pemilik parent comment (jika bukan diri sendiri)
                 if ($parentComment->user_id !== $actorId) {
-                    NotificationService::send(
-                        $parentComment->user_id,
-                        $actorId,
-                        'new_reply',
-                        $comment->id,
-                        'comment'
-                    );
+                    NotificationService::send($parentComment->user_id, $actorId, 'new_reply', $comment->id, 'comment');
                 }
-
-                // 2. Kirim notifikasi 'new_comment' ke pemilik post 
-                // (jika pemilik post beda dengan pemilik parent comment & bukan diri sendiri)
                 if ($post->user_id !== $parentComment->user_id && $post->user_id !== $actorId) {
-                    NotificationService::send(
-                        $post->user_id,
-                        $actorId,
-                        'new_comment',
-                        $comment->id,
-                        'comment'
-                    );
+                    NotificationService::send($post->user_id, $actorId, 'new_comment', $comment->id, 'comment');
                 }
             } else {
-                // Top-level comment: Kirim notifikasi 'new_comment' ke pemilik post (jika bukan diri sendiri)
                 if ($post->user_id !== $actorId) {
-                    NotificationService::send(
-                        $post->user_id,
-                        $actorId,
-                        'new_comment',
-                        $comment->id,
-                        'comment'
-                    );
+                    NotificationService::send($post->user_id, $actorId, 'new_comment', $comment->id, 'comment');
                 }
             }
 
-            return $this->createdResponse(
-                new CommentResource($comment),
-                'Komentar berhasil ditambahkan.'
-            );
+            return $this->createdResponse(new CommentResource($comment), 'Komentar berhasil ditambahkan.');
 
         } catch (\Throwable $e) {
             return $this->errorResponse(
@@ -132,10 +93,7 @@ class CommentController extends Controller
         $comment->load(['user', 'replies.user']);
         $comment->loadCount('replies');
 
-        return $this->successResponse(
-            new CommentResource($comment),
-            'Detail komentar berhasil diambil.'
-        );
+        return $this->successResponse(new CommentResource($comment), 'Detail komentar berhasil diambil.');
     }
 
     public function update(UpdateCommentRequest $request, Post $post, Comment $comment): JsonResponse
@@ -162,15 +120,12 @@ class CommentController extends Controller
                         'body_before' => $oldBody,
                         'body_after'  => $newBody,
                     ]);
-
                     $comment->update(['body' => $newBody]);
                 }
             });
 
-            $comment->refresh()->load('user');
-
             return $this->successResponse(
-                new CommentResource($comment),
+                new CommentResource($comment->refresh()->load('user')),
                 'Komentar berhasil diupdate.'
             );
 
@@ -196,13 +151,9 @@ class CommentController extends Controller
         }
 
         if ($comment->is_accepted) {
-            $post->update([
-                'accepted_answer_id' => null,
-                'is_answered'        => false,
-            ]);
+            $post->update(['accepted_answer_id' => null, 'is_answered' => false]);
         }
 
-        // Implementasi soft delete manual
         $comment->update(['is_deleted' => true]);
 
         return $this->noContentResponse('Komentar berhasil dihapus.');
@@ -213,14 +164,10 @@ class CommentController extends Controller
         if ($comment->is_accepted) {
             $post = Post::find($comment->post_id);
             if ($post && $post->accepted_answer_id === $comment->id) {
-                $post->update([
-                    'is_answered'        => false,
-                    'accepted_answer_id' => null,
-                ]);
+                $post->update(['is_answered' => false, 'accepted_answer_id' => null]);
             }
         }
 
-        // Implementasi soft delete manual
         $comment->update(['is_deleted' => true]);
 
         return $this->noContentResponse('Komentar berhasil dihapus oleh moderator.');

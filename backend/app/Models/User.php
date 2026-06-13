@@ -85,10 +85,6 @@ class User extends Authenticatable
         }
     }
 
-    // ────────────────────────────────────────────────────────────
-    // RELATIONSHIPS
-    // ────────────────────────────────────────────────────────────
-
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'user_roles', 'user_id', 'role_id')
@@ -144,13 +140,7 @@ class User extends Authenticatable
     {
        return $this->hasMany(Report::class, 'reporter_id');
     }
-    // ────────────────────────────────────────────────────────────
-    // HELPER METHODS
-    // ────────────────────────────────────────────────────────────
 
-    /**
-     * Cek apakah user memiliki role tertentu.
-     */
     public function hasRole(string $roleName): bool
     {
         if ($this->relationLoaded('roles')) {
@@ -180,9 +170,6 @@ class User extends Authenticatable
         return $this->hasAnyRole(['admin', 'moderator']);
     }
 
-    /**
-     * Tambah poin reputasi.
-     */
     public function addReputation(int $points, string $actionType, ?string $referenceId = null): void
     {
         $this->increment('reputation_points', $points);
@@ -195,9 +182,6 @@ class User extends Authenticatable
         $this->updateLevel();
     }
 
-    /**
-     * Kurangi poin reputasi.
-     */
     public function deductReputation(int $points, string $actionType, ?string $referenceId = null): void
     {
         $newPoints = max(0, $this->reputation_points - $points);
@@ -211,21 +195,12 @@ class User extends Authenticatable
         $this->updateLevel();
     }
 
-    /**
-     * Update level berdasarkan reputasi.
-     */
     private function updateLevel(): void
     {
         $thresholds = [
-            1  => 0,
-            2  => 100,
-            3  => 300,
-            4  => 600,
-            5  => 1000,
-            6  => 2000,
-            7  => 4000,
-            8  => 7000,
-            9  => 11000,
+            1  => 0,    2  => 100,  3  => 300,
+            4  => 600,  5  => 1000, 6  => 2000,
+            7  => 4000, 8  => 7000, 9  => 11000,
             10 => 15000,
         ];
 

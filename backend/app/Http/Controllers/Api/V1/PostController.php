@@ -15,6 +15,7 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
@@ -29,22 +30,12 @@ class PostController extends Controller
                 $request->input('status', 'open') !== 'all',
                 fn($q) => $q->where('status', $request->input('status', 'open'))
             )
-            ->when(
-                $request->filled('category_id'),
-                fn($q) => $q->where('category_id', $request->input('category_id'))
-            )
-            ->when(
-                $request->filled('tag'),
-                fn($q) => $q->whereHas('tags', fn($tq) => $tq->where('slug', $request->input('tag')))
-            )
-            ->when(
-                $request->filled('q'),
-                fn($q) => $q->where(function ($query) use ($request) {
-                    $kw = '%' . $request->input('q') . '%';
-                    $query->where('title', 'like', $kw)
-                          ->orWhere('body', 'like', $kw);
-                })
-            )
+            ->when($request->filled('category_id'), fn($q) => $q->where('category_id', $request->input('category_id')))
+            ->when($request->filled('tag'), fn($q) => $q->whereHas('tags', fn($tq) => $tq->where('slug', $request->input('tag'))))
+            ->when($request->filled('q'), fn($q) => $q->where(function ($query) use ($request) {
+                $kw = '%' . $request->input('q') . '%';
+                $query->where('title', 'like', $kw)->orWhere('body', 'like', $kw);
+            }))
             ->when(true, function ($q) use ($request) {
                 match ($request->input('sort', 'newest')) {
                     'oldest' => $q->orderBy('created_at', 'asc'),
@@ -75,12 +66,8 @@ class PostController extends Controller
 
                 if ($request->filled('tags')) {
                     $tagIds = collect($request->input('tags'))->map(function ($tag) {
-                        // Support nama tag (string) atau UUID
-                        if (!\Illuminate\Support\Str::isUuid($tag)) {
-                            $model = Tag::firstOrCreate(
-                                ['slug' => \Illuminate\Support\Str::slug($tag)],
-                                ['name' => $tag]
-                            );
+                        if (! Str::isUuid($tag)) {
+                            $model = Tag::firstOrCreate(['slug' => Str::slug($tag)], ['name' => $tag]);
                             return $model->id;
                         }
                         return $tag;
@@ -95,10 +82,7 @@ class PostController extends Controller
 
             $post->load(['user', 'category', 'tags']);
 
-            return $this->createdResponse(
-                new PostResource($post),
-                'Post berhasil dibuat.'
-            );
+            return $this->createdResponse(new PostResource($post), 'Post berhasil dibuat.');
 
         } catch (\Throwable $e) {
             return $this->errorResponse(
@@ -118,18 +102,12 @@ class PostController extends Controller
         }
 
         $post->load([
-            'user',
-            'category',
-            'tags',
-            'acceptedAnswer.user',
+            'user', 'category', 'tags', 'acceptedAnswer.user',
             'topLevelComments' => fn($q) => $q->with(['user', 'replies.user'])->withCount('replies'),
         ]);
         $post->loadCount('comments');
 
-        return $this->successResponse(
-            new PostResource($post),
-            'Detail post berhasil diambil.'
-        );
+        return $this->successResponse(new PostResource($post), 'Detail post berhasil diambil.');
     }
 
     public function update(UpdatePostRequest $request, Post $post): JsonResponse
@@ -168,11 +146,8 @@ class PostController extends Controller
                 if ($request->has('tags')) {
                     $oldTagIds = $post->tags()->pluck('tags.id')->toArray();
                     $newTagIds = collect($request->input('tags', []))->map(function ($tag) {
-                        if (!\Illuminate\Support\Str::isUuid($tag)) {
-                            $model = Tag::firstOrCreate(
-                                ['slug' => \Illuminate\Support\Str::slug($tag)],
-                                ['name' => $tag]
-                            );
+                        if (! Str::isUuid($tag)) {
+                            $model = Tag::firstOrCreate(['slug' => Str::slug($tag)], ['name' => $tag]);
                             return $model->id;
                         }
                         return $tag;
@@ -192,9 +167,10 @@ class PostController extends Controller
                 }
             });
 
-            $post->refresh()->load(['user', 'category', 'tags']);
-
-            return $this->successResponse(new PostResource($post), 'Post berhasil diupdate.');
+            return $this->successResponse(
+                new PostResource($post->refresh()->load(['user', 'category', 'tags'])),
+                'Post berhasil diupdate.'
+            );
 
         } catch (\Throwable $e) {
             return $this->errorResponse(
@@ -256,22 +232,11 @@ class PostController extends Controller
                 if ($post->accepted_answer_id) {
                     Comment::where('id', $post->accepted_answer_id)->update(['is_accepted' => false]);
                 }
-
                 $comment->update(['is_accepted' => true]);
-                $post->update([
-                    'accepted_answer_id' => $comment->id,
-                    'is_answered'        => true,
-                ]);
+                $post->update(['accepted_answer_id' => $comment->id, 'is_answered' => true]);
             });
 
-            // Wire notifikasi ke pemilik comment
-            NotificationService::send(
-                $comment->user_id,
-                $request->user()->id,
-                'answer_accepted',
-                $comment->id,
-                'comment'
-            );
+            NotificationService::send($comment->user_id, $request->user()->id, 'answer_accepted', $comment->id, 'comment');
 
             return $this->successResponse(null, 'Jawaban berhasil diterima.');
 
@@ -322,5 +287,4 @@ class PostController extends Controller
 
         return $this->noContentResponse('Post berhasil dihapus oleh moderator.');
     }
-
 }
