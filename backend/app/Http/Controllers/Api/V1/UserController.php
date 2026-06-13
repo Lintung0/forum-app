@@ -12,9 +12,12 @@ class UserController extends Controller
 {
     use ApiResponse;
 
-    public function show(User $user)
+    public function show(Request $request, User $user)
     {
-        $user->loadCount(['followers', 'following', 'posts', 'comments']);
+        $user->loadCount([
+            'followers', 'following', 'posts', 'comments',
+            'comments as accepted_answers_count' => fn($q) => $q->where('is_accepted', true),
+        ]);
 
         $recentPosts = $user->posts()
             ->with('category:id,name,slug')
@@ -58,7 +61,13 @@ class UserController extends Controller
             'followers_count'   => $user->followers_count,
             'following_count'   => $user->following_count,
             'posts_count'       => $user->posts_count,
-            'comments_count'    => $user->comments_count,
+            'comments_count'        => $user->comments_count,
+            'accepted_answers_count' => $user->accepted_answers_count,
+            'is_followed_by_me'      => $request->user()
+                ? \App\Models\Follow::where('follower_id', $request->user()->id)
+                    ->where('following_id', $user->id)
+                    ->exists()
+                : false,
             'created_at'        => $user->created_at?->toISOString(),
             'recent_posts'      => $recentPosts,
             'recent_comments'   => $recentComments,
