@@ -89,6 +89,8 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'banned', 'thr
     Route::apiResource('bookmarks', BookmarkController::class)->only(['index', 'store', 'destroy']);
 
     
+    Route::put('users/{user}',             [UserController::class, 'update'])->name('users.update');
+    Route::post('users/{user}/avatar',     [UserController::class, 'updateAvatar'])->name('users.avatar');
     Route::post('users/{user}/follow',     [FollowController::class, 'follow']);
     Route::delete('users/{user}/unfollow', [FollowController::class, 'unfollow']);
 
