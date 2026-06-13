@@ -18,7 +18,6 @@ class UserController extends Controller
 
         $recentPosts = $user->posts()
             ->with('category:id,name,slug')
-            ->withSum('votes', 'value')
             ->latest()
             ->take(10)
             ->get()
@@ -26,7 +25,7 @@ class UserController extends Controller
                 'id'         => $post->id,
                 'title'      => $post->title,
                 'slug'       => $post->slug,
-                'vote_score' => $post->votes_sum_value ?? 0,
+                'vote_score' => $post->vote_score ?? 0,
                 'created_at' => $post->created_at?->toISOString(),
                 'category'   => [
                     'name' => $post->category?->name,
@@ -36,7 +35,6 @@ class UserController extends Controller
 
         $recentComments = $user->comments()
             ->with('post:id,title')
-            ->withSum('votes', 'value')
             ->latest()
             ->take(10)
             ->get()
@@ -45,7 +43,7 @@ class UserController extends Controller
                 'post_id'     => $comment->post_id,
                 'post_title'  => $comment->post?->title,
                 'body'        => $comment->body,
-                'vote_score'  => $comment->votes_sum_value ?? 0,
+                'vote_score'  => $comment->vote_score ?? 0,
                 'is_accepted' => $comment->is_accepted ?? false,
                 'created_at'  => $comment->created_at?->toISOString(),
             ]);
