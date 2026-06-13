@@ -1,5 +1,7 @@
 /.phpunit.cache
 /node_modules
+fe-forum-app/node_modules
+fe-forum-app/.next
 /public/build
 /public/hot
 /public/storage
