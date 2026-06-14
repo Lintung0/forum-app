@@ -29,19 +29,19 @@ export default function HomeView({ posts, tags }: HomeViewProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 p-6">
-      <div className="xl:col-span-2 space-y-6">
-        <div className="p-8 rounded-2xl bg-gradient-to-r from-[#1c122c] to-[#0f111a] border border-[#26193e] relative overflow-hidden">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 p-5">
+      <div className="xl:col-span-2 space-y-5">
+        <div className="p-6 rounded-2xl bg-gradient-to-r from-[#1c122c] to-[#0f111a] border border-[#26193e] relative overflow-hidden">
           <div className="relative z-10">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-3">✨ Welcome to Voxra</h1>
-            <p className="text-sm text-gray-400 max-w-xl leading-relaxed mb-6 font-normal">
+            <h1 className="text-2xl font-bold tracking-tight text-white mb-2">✨ Welcome to Voxra</h1>
+            <p className="text-sm text-gray-400 max-w-xl leading-relaxed mb-4 font-normal">
               Join the most active developer community. Share knowledge, solve problems, and connect with experts from around the world.
             </p>
-            <div className="flex gap-4 md:gap-8">
+            <div className="flex gap-3 md:gap-5">
               {[['142K+', 'Members'], ['45K+', 'Discussions'], ['28K+', 'Solved']].map(([val, label]) => (
-                <div key={label} className="bg-[#161426] border border-[#2e234d] px-5 py-3 rounded-xl">
-                  <div className="text-xl font-bold tracking-tight text-white">{val}</div>
-                  <div className="text-[11px] font-medium text-gray-400 tracking-wide uppercase">{label}</div>
+                <div key={label} className="bg-[#161426] border border-[#2e234d] px-4 py-2 rounded-xl">
+                  <div className="text-lg font-bold tracking-tight text-white">{val}</div>
+                  <div className="text-[10px] font-medium text-gray-400 tracking-wide uppercase">{label}</div>
                 </div>
               ))}
             </div>
@@ -78,7 +78,7 @@ export default function HomeView({ posts, tags }: HomeViewProps) {
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-5">
         <Card className="p-5 bg-[#16181d] border-[#22252e] space-y-4 rounded-xl">
           <div className="font-semibold text-sm text-white flex items-center gap-2 tracking-tight">
             <span>📈</span> Community Stats

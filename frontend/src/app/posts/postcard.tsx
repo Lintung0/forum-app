@@ -35,25 +35,34 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-function VoteBox({ score }: { score: number }) {
+function VoteBox({ score, postId }: { score: number; postId: string }) {
+  const [localScore, setLocalScore] = useState(score);
+  const [voting, setVoting] = useState(false);
+
+  const handleVote = async (e: React.MouseEvent, type: 'upvote' | 'downvote') => {
+    e.stopPropagation();
+    const token = localStorage.getItem('auth_token');
+    if (!token) { alert('Login dulu untuk vote.'); return; }
+    if (voting) return;
+    setVoting(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/v1/votes`, {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ target_id: postId, target_type: 'post', vote_type: type }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setLocalScore(json.data?.vote_score ?? localScore);
+      }
+    } catch {} finally { setVoting(false); }
+  };
+
   return (
-    <div
-      className="flex flex-col items-center justify-start pt-0.5 min-w-[36px]"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <ArrowUp className="h-4 w-4 text-gray-600 hover:text-[#e95723] cursor-pointer transition-colors" />
-      <span
-        className={`text-xs font-bold my-0.5 tabular-nums ${
-          score > 0
-            ? "text-[#e95723]"
-            : score < 0
-              ? "text-blue-400"
-              : "text-gray-500"
-        }`}
-      >
-        {score}
-      </span>
-      <ArrowUp className="h-4 w-4 text-gray-600 hover:text-blue-400 cursor-pointer transition-colors rotate-180" />
+    <div className="flex flex-col items-center justify-start pt-0.5 min-w-[36px]">
+      <ArrowUp className={`h-4 w-4 cursor-pointer transition-colors ${voting ? 'text-gray-700' : 'text-gray-600 hover:text-[#e95723]'}`} onClick={(e) => handleVote(e, 'upvote')} />
+      <span className={`text-xs font-bold my-0.5 tabular-nums ${localScore > 0 ? 'text-[#e95723]' : localScore < 0 ? 'text-blue-400' : 'text-gray-500'}`}>{localScore}</span>
+      <ArrowUp className={`h-4 w-4 rotate-180 cursor-pointer transition-colors ${voting ? 'text-gray-700' : 'text-gray-600 hover:text-blue-400'}`} onClick={(e) => handleVote(e, 'downvote')} />
     </div>
   );
 }
@@ -149,7 +158,7 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
     >
       <Card className="bg-[#13151a] border border-[#1e222b] hover:border-[#e95723]/30 hover:bg-[#16181d] transition-all duration-150 rounded-lg overflow-hidden">
         <div className="flex gap-3 p-3 relative">
-          <VoteBox score={post.vote_score} />
+          <VoteBox score={post.vote_score} postId={post.id} />
 
           <div className="flex-1 min-w-0 space-y-1.5">
             {/* Header */}

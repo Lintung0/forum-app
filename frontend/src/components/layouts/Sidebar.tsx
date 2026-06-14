@@ -1,15 +1,13 @@
 'use client';
 
 import React from 'react';
-import { TrendingUp, MessageSquare, Folder, Hash, Bookmark, Bell, ShieldAlert, Users } from 'lucide-react';
+import { TrendingUp, MessageSquare, Bookmark, Bell, ShieldAlert, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const menus: { name: string; icon: React.ElementType; href: string }[] = [
   { name: 'Trending', icon: TrendingUp, href: '/home' },
   { name: 'Discussions', icon: MessageSquare, href: '/posts' },
-  { name: 'Categories', icon: Folder, href: '#' },
-  { name: 'Tags', icon: Hash, href: '#' },
   { name: 'Bookmarks', icon: Bookmark, href: '/bookmarks' },
   { name: 'Notifications', icon: Bell, href: '/notifications' },
 ];
@@ -34,15 +32,15 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <aside className="w-60 shrink-0 h-[calc(100vh-64px)] sticky top-16 hidden lg:flex flex-col border-r border-[#1e2129] bg-[#0b0d10] overflow-y-auto">
-      <nav className="flex-1 p-3 space-y-0.5">
+    <aside className="w-[180px] shrink-0 h-[calc(100vh-64px)] sticky top-16 hidden lg:flex flex-col border-r border-[#1e2129] bg-[#0b0d10] overflow-y-auto">
+      <nav className="flex-1 px-2 py-3 space-y-0.5">
         {menus.map(({ name, icon: Icon, href }) => {
           const active = pathname === href;
           return (
             <Link
               key={name}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all ${
                 active
                   ? 'bg-[#1e0f09] text-[#e95723] border border-[#3d1a0a]'
                   : 'text-gray-400 hover:bg-[#13151a] hover:text-white'
@@ -62,9 +60,9 @@ export default function Sidebar() {
               <div>
                 <button
                   onClick={() => setAdminOpen((s) => !s)}
-                  className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:bg-[#13151a] hover:text-white transition-all"
+                  className="w-full flex items-center justify-between gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium text-gray-400 hover:bg-[#13151a] hover:text-white transition-all"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <ShieldAlert className="h-4 w-4 shrink-0 text-gray-500" />
                     Admin
                   </div>
@@ -84,9 +82,9 @@ export default function Sidebar() {
               <div>
                 <button
                   onClick={() => setModOpen((s) => !s)}
-                  className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:bg-[#13151a] hover:text-white transition-all"
+                  className="w-full flex items-center justify-between gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium text-gray-400 hover:bg-[#13151a] hover:text-white transition-all"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <Users className="h-4 w-4 shrink-0 text-gray-500" />
                     Moderator
                   </div>

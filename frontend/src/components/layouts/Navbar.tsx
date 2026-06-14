@@ -27,6 +27,12 @@ export default function Navbar() {
   const [mounted, setMounted] = useState<boolean>(false);
   const [authToken, setAuthToken] = useState<string>("");
   const [authUser, setAuthUser] = useState<{ username: string; avatar_url?: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) router.push(`/posts?q=${encodeURIComponent(searchQuery.trim())}`);
+  };
 
   const checkAuth = () => {
     if (typeof window !== "undefined") {
@@ -70,13 +76,15 @@ export default function Navbar() {
       </Link>
 
       {}
-      <div className="relative w-full max-w-md hidden md:block">
+      <form onSubmit={handleSearch} className="relative w-full max-w-md hidden md:block">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
         <Input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search discussions, tags, users..."
           className="pl-9 bg-[#16181d] border-[#22252e] text-white placeholder-gray-500 rounded-xl focus-visible:ring-1 focus-visible:ring-[#e95723] focus-visible:ring-offset-0"
         />
-      </div>
+      </form>
 
       {}
       <div className="flex items-center gap-4">

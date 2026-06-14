@@ -28,11 +28,11 @@ export default function LoginView({ onSubmit }: LoginViewProps) {
     <AuthLayout>
       <Card className="bg-zinc-900/40 border-zinc-800/80 p-6 md:p-8 rounded-3xl backdrop-blur-md shadow-[0_0_50px_rgba(0,0,0,0.3)] space-y-6">
         <div className="text-center space-y-2">
-          <div className="inline-flex w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-orange-500 items-center justify-center shadow-[0_0_20px_rgba(147,51,234,0.4)] mb-2">
-            <span className="text-white font-black text-base">X</span>
+          <div className="inline-flex w-10 h-10 rounded-xl bg-gradient-to-tr from-[#e95723] to-[#f59e0b] items-center justify-center shadow-[0_0_20px_rgba(233,87,35,0.4)] mb-2">
+            <span className="text-white font-black text-base">V</span>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-zinc-100">
-            Welcome Back to <span className="bg-gradient-to-r from-purple-400 to-orange-400 bg-clip-text text-transparent">ForumX</span>
+            Welcome Back to <span className="bg-gradient-to-r from-[#e95723] to-[#f59e0b] bg-clip-text text-transparent">Voxra</span>
           </h1>
           <p className="text-xs text-zinc-400 font-light">Masuk untuk melanjutkan diskusi dengan developer lainnya.</p>
         </div>
@@ -44,7 +44,7 @@ export default function LoginView({ onSubmit }: LoginViewProps) {
               type="email"
               {...register("email")}
               placeholder="name@example.com"
-              className="bg-zinc-950 border-zinc-800 text-zinc-200 placeholder:text-zinc-600 focus-visible:ring-purple-500 rounded-xl py-5"
+              className="bg-zinc-950 border-zinc-800 text-zinc-200 placeholder:text-zinc-600 focus-visible:ring-[#e95723] rounded-xl py-5"
             />
             {errors.email && <p className="text-xs text-red-400 px-1">{errors.email.message}</p>}
           </div>
@@ -57,12 +57,12 @@ export default function LoginView({ onSubmit }: LoginViewProps) {
               type="password"
               {...register("password")}
               placeholder="••••••••"
-              className="bg-zinc-950 border-zinc-800 text-zinc-200 placeholder:text-zinc-600 focus-visible:ring-purple-500 rounded-xl py-5"
+              className="bg-zinc-950 border-zinc-800 text-zinc-200 placeholder:text-zinc-600 focus-visible:ring-[#e95723] rounded-xl py-5"
             />
             {errors.password && <p className="text-xs text-red-400 px-1">{errors.password.message}</p>}
           </div>
 
-          <Button type="submit" disabled={isSubmitting} className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold rounded-xl py-5 shadow-[0_0_20px_rgba(147,51,234,0.2)] transition-all mt-2">
+          <Button type="submit" disabled={isSubmitting} className="w-full bg-gradient-to-r from-[#e95723] to-[#d0481b] hover:from-[#f06030] hover:to-[#e95723] text-white font-semibold rounded-xl py-5 shadow-[0_0_20px_rgba(233,87,35,0.2)] transition-all mt-2">
             {isSubmitting ? "Signing in..." : "Sign In"}
           </Button>
         </form>

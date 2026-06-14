@@ -50,7 +50,7 @@ export default function RootLayout({
           <Navbar />
 
           {}
-          <div className="flex pt-16 max-w-[1440px] w-full mx-auto flex-1 items-start">
+          <div className="flex pt-16 max-w-[1320px] w-full mx-auto flex-1 items-start">
             {}
             <Sidebar />
 
