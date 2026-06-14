@@ -46,15 +46,9 @@ export default function RootLayout({
         )}
       >
         <Providers>
-          {}
           <Navbar />
-
-          {}
-          <div className="flex pt-16 max-w-[1320px] w-full mx-auto flex-1 items-start">
-            {}
+          <div className="flex pt-16 max-w-[1400px] w-full mx-auto flex-1 items-start">
             <Sidebar />
-
-            {}
             <main className="flex-1 w-full min-w-0 overflow-y-auto">
               {children}
             </main>

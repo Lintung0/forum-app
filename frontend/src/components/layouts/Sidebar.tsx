@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { TrendingUp, MessageSquare, Bookmark, Bell, ShieldAlert, Users } from 'lucide-react';
+import { TrendingUp, MessageSquare, Bookmark, Bell, ShieldAlert, Users, LayoutDashboard, FileText, Flag, UserCog } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -12,12 +12,41 @@ const menus: { name: string; icon: React.ElementType; href: string }[] = [
   { name: 'Notifications', icon: Bell, href: '/notifications' },
 ];
 
+const adminLinks: { name: string; icon: React.ElementType; href: string }[] = [
+  { name: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
+  { name: 'Users', icon: UserCog, href: '/admin/users' },
+  { name: 'Categories', icon: FileText, href: '/admin/categories' },
+  { name: 'Reports', icon: Flag, href: '/admin/reports' },
+];
+
+const modLinks: { name: string; icon: React.ElementType; href: string }[] = [
+  { name: 'Dashboard', icon: LayoutDashboard, href: '/moderator' },
+  { name: 'Reports', icon: Flag, href: '/moderator/reports' },
+];
+
+function SidebarIcon({ name, icon: Icon, href, active }: { name: string; icon: React.ElementType; href: string; active: boolean }) {
+  return (
+    <Link
+      href={href}
+      title={name}
+      className={`group relative flex items-center justify-center w-10 h-10 rounded-xl transition-all ${
+        active
+          ? 'bg-[#e95723] text-white shadow-lg shadow-[#e95723]/20'
+          : 'text-gray-500 hover:bg-[#1a1d24] hover:text-white'
+      }`}
+    >
+      <Icon className="h-[18px] w-[18px]" />
+      <span className="pointer-events-none absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-[#1a1d24] border border-[#2a2d35] text-white text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-xl">
+        {name}
+      </span>
+    </Link>
+  );
+}
+
 export default function Sidebar() {
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = React.useState(false);
   const [isModerator, setIsModerator] = React.useState(false);
-  const [adminOpen, setAdminOpen] = React.useState(false);
-  const [modOpen, setModOpen] = React.useState(false);
 
   React.useEffect(() => {
     try {
@@ -32,76 +61,24 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <aside className="w-[180px] shrink-0 h-[calc(100vh-64px)] sticky top-16 hidden lg:flex flex-col border-r border-[#1e2129] bg-[#0b0d10] overflow-y-auto">
-      <nav className="flex-1 px-2 py-3 space-y-0.5">
-        {menus.map(({ name, icon: Icon, href }) => {
-          const active = pathname === href;
-          return (
-            <Link
-              key={name}
-              href={href}
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all ${
-                active
-                  ? 'bg-[#1e0f09] text-[#e95723] border border-[#3d1a0a]'
-                  : 'text-gray-400 hover:bg-[#13151a] hover:text-white'
-              }`}
-            >
-              <Icon className={`h-4 w-4 shrink-0 ${active ? 'text-[#e95723]' : 'text-gray-500'}`} />
-              {name}
-            </Link>
-          );
-        })}
+    <aside className="w-16 shrink-0 h-[calc(100vh-64px)] sticky top-16 hidden lg:flex flex-col items-center border-r border-[#1e2129] bg-[#0b0d10] py-4 gap-1.5 overflow-y-auto">
+      {menus.map((item) => (
+        <SidebarIcon key={item.name} {...item} active={pathname === item.href} />
+      ))}
 
-        {(isAdmin || isModerator) && (
-          <div className="pt-3 mt-2 border-t border-[#1e2129]">
-            <p className="px-3 pb-1 text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Panel</p>
+      {(isAdmin || isModerator) && (
+        <>
+          <div className="w-6 h-px bg-[#1e2129] my-2" />
 
-            {isAdmin && (
-              <div>
-                <button
-                  onClick={() => setAdminOpen((s) => !s)}
-                  className="w-full flex items-center justify-between gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium text-gray-400 hover:bg-[#13151a] hover:text-white transition-all"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <ShieldAlert className="h-4 w-4 shrink-0 text-gray-500" />
-                    Admin
-                  </div>
-                  <span className="text-gray-600 text-xs">{adminOpen ? '▾' : '▸'}</span>
-                </button>
-                {adminOpen && (
-                  <div className="pl-9 space-y-0.5">
-                    {[['Overview', '/admin'], ['Users', '/admin/users'], ['Categories', '/admin/categories'], ['Reports', '/admin/reports']].map(([label, href]) => (
-                      <Link key={href} href={href} className="block px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-[#13151a]">{label}</Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+          {isAdmin && adminLinks.map((item) => (
+            <SidebarIcon key={item.name} {...item} active={pathname === item.href} />
+          ))}
 
-            {isModerator && (
-              <div>
-                <button
-                  onClick={() => setModOpen((s) => !s)}
-                  className="w-full flex items-center justify-between gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium text-gray-400 hover:bg-[#13151a] hover:text-white transition-all"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Users className="h-4 w-4 shrink-0 text-gray-500" />
-                    Moderator
-                  </div>
-                  <span className="text-gray-600 text-xs">{modOpen ? '▾' : '▸'}</span>
-                </button>
-                {modOpen && (
-                  <div className="pl-9 space-y-0.5">
-                    {[['Overview', '/moderator'], ['Reports', '/moderator/reports']].map(([label, href]) => (
-                      <Link key={href} href={href} className="block px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-[#13151a]">{label}</Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </nav>
+          {isModerator && !isAdmin && modLinks.map((item) => (
+            <SidebarIcon key={item.name} {...item} active={pathname === item.href} />
+          ))}
+        </>
+      )}
     </aside>
   );
 }
