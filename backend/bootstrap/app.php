@@ -28,16 +28,16 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // ─── Custom Middleware Aliases ───────────────────────────
         $middleware->alias([
-            'role'          => CheckRole::class,
-            'banned'        => CheckBanned::class,
-            'throttle'      => ThrottleRequests::class,
-            'auth.optional' => \App\Http\Middleware\OptionalAuth::class,
+            'role'           => CheckRole::class,
+            'banned'         => CheckBanned::class,
+            'throttle'       => ThrottleRequests::class,
+            'auth.optional'  => \App\Http\Middleware\OptionalAuth::class,
+            'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
         ]);
 
-        // ─── Append ke semua API route ───────────────────────────
-        // Menambahkan header Accept: application/json secara otomatis
         $middleware->appendToGroup('api', [
             \Illuminate\Http\Middleware\HandleCors::class,
+            \App\Http\Middleware\SecurityHeaders::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

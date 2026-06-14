@@ -14,6 +14,7 @@ use App\Services\NotificationService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -23,28 +24,32 @@ class PostController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $posts = Post::query()
-            ->with(['user', 'category', 'tags'])
-            ->withCount('comments')
-            ->when(
-                $request->input('status', 'open') !== 'all',
-                fn($q) => $q->where('status', $request->input('status', 'open'))
-            )
-            ->when($request->filled('category_id'), fn($q) => $q->where('category_id', $request->input('category_id')))
-            ->when($request->filled('tag'), fn($q) => $q->whereHas('tags', fn($tq) => $tq->where('slug', $request->input('tag'))))
-            ->when($request->filled('q'), fn($q) => $q->where(function ($query) use ($request) {
-                $kw = '%' . $request->input('q') . '%';
-                $query->where('title', 'like', $kw)->orWhere('body', 'like', $kw);
-            }))
-            ->when(true, function ($q) use ($request) {
-                match ($request->input('sort', 'newest')) {
-                    'oldest' => $q->orderBy('created_at', 'asc'),
-                    'votes'  => $q->orderByDesc('vote_score'),
-                    'views'  => $q->orderByDesc('view_count'),
-                    default  => $q->orderByDesc('created_at'),
-                };
-            })
-            ->paginate(min((int) $request->input('per_page', 15), 50));
+        $cacheKey = 'posts:' . md5($request->getQueryString() ?? '');
+
+        $posts = Cache::remember($cacheKey, 60, function () use ($request) {
+            return Post::query()
+                ->with(['user', 'category', 'tags'])
+                ->withCount('comments')
+                ->when(
+                    $request->input('status', 'open') !== 'all',
+                    fn($q) => $q->where('status', $request->input('status', 'open'))
+                )
+                ->when($request->filled('category_id'), fn($q) => $q->where('category_id', $request->input('category_id')))
+                ->when($request->filled('tag'), fn($q) => $q->whereHas('tags', fn($tq) => $tq->where('slug', $request->input('tag'))))
+                ->when($request->filled('q'), fn($q) => $q->where(function ($query) use ($request) {
+                    $kw = '%' . $request->input('q') . '%';
+                    $query->where('title', 'like', $kw)->orWhere('body', 'like', $kw);
+                }))
+                ->when(true, function ($q) use ($request) {
+                    match ($request->input('sort', 'newest')) {
+                        'oldest' => $q->orderBy('created_at', 'asc'),
+                        'votes'  => $q->orderByDesc('vote_score'),
+                        'views'  => $q->orderByDesc('view_count'),
+                        default  => $q->orderByDesc('created_at'),
+                    };
+                })
+                ->paginate(min((int) $request->input('per_page', 15), 50));
+        });
 
         return $this->paginatedResponse(
             $posts->through(fn($post) => new PostResource($post)),
@@ -81,6 +86,8 @@ class PostController extends Controller
             });
 
             $post->load(['user', 'category', 'tags']);
+
+            Cache::flush();
 
             return $this->createdResponse(new PostResource($post), 'Post berhasil dibuat.');
 

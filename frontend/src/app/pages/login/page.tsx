@@ -2,18 +2,17 @@
 
 import api from '@/lib/axios';
 import LoginView from "./LoginView";
-import { LoginFormData } from "./type";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
 
-  const handleLoginSubmit = async (data: LoginFormData) => {
+  const handleLoginSubmit = async (data: { email: string; password: string }) => {
     try {
       const response = await api.post("/auth/login", data);
       if (response.data.success || response.status === 200) {
         const token = response.data.data?.token || response.data.data?.access_token;
-        if (!token) { alert('Login sukses tapi token tidak ditemukan.'); return; }
+        if (!token) { alert('Token tidak ditemukan.'); return; }
 
         localStorage.setItem('auth_token', token);
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;

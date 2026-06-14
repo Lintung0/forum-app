@@ -2,13 +2,12 @@
 
 import api from '@/lib/axios';
 import RegisterView from "./RegisterView";
-import { RegisterFormData } from "./type";
 import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const router = useRouter();
 
-  const handleRegisterSubmit = async (data: RegisterFormData) => {
+  const handleRegisterSubmit = async (data: { username: string; email: string; password: string; password_confirmation: string }) => {
     try {
       const response = await api.post("/auth/register", data);
       if (response.data.success || response.status === 201 || response.status === 200) {

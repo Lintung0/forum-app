@@ -8,6 +8,7 @@ use App\Models\Tag;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -21,13 +22,17 @@ class TagController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $tags = Tag::query()
-            ->when(
-                $request->filled('q'),
-                fn($q) => $q->where('name', 'like', '%' . $request->input('q') . '%')
-            )
-            ->orderByDesc('usage_count')
-            ->paginate(min($request->input('per_page', 20), 100));
+        $cacheKey = 'tags:' . md5($request->getQueryString() ?? '');
+
+        $tags = Cache::remember($cacheKey, 300, function () use ($request) {
+            return Tag::query()
+                ->when(
+                    $request->filled('q'),
+                    fn($q) => $q->where('name', 'like', '%' . $request->input('q') . '%')
+                )
+                ->orderByDesc('usage_count')
+                ->paginate(min($request->input('per_page', 20), 100));
+        });
 
         return $this->paginatedResponse(
             $tags->through(fn($tag) => new TagResource($tag)),
