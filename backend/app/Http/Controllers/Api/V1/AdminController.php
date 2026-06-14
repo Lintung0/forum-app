@@ -16,6 +16,33 @@ class AdminController extends Controller
 {
     use ApiResponse;
 
+    public function listUsers(Request $request)
+    {
+        $users = User::query()
+            ->with('roles')
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $kw = '%' . $request->input('q') . '%';
+                $q->where(function ($query) use ($kw) {
+                    $query->where('username', 'like', $kw)
+                          ->orWhere('email', 'like', $kw);
+                });
+            })
+            ->when($request->filled('status'), function ($q) use ($request) {
+                if ($request->input('status') === 'banned') {
+                    $q->where('is_banned', true);
+                } else {
+                    $q->where('is_banned', false);
+                }
+            })
+            ->orderByDesc('created_at')
+            ->paginate(min((int) $request->input('per_page', 20), 50));
+
+        return $this->paginatedResponse(
+            $users->through(fn($u) => new UserResource($u)),
+            'Daftar user berhasil diambil.'
+        );
+    }
+
     public function banUser(Request $request, User $user)
     {
         if ($request->user()->id === $user->id) {

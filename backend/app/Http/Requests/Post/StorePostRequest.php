@@ -20,7 +20,7 @@ class StorePostRequest extends FormRequest
             'body'        => ['required', 'string', 'min:20'],
             'category_id' => ['required', 'uuid', 'exists:categories,id'],
             'tags'        => ['nullable', 'array', 'max:5'],
-            'tags.*'      => ['uuid', 'exists:tags,id'],
+            'tags.*'      => ['required', 'string', 'min:1'],
         ];
     }
 

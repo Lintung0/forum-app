@@ -19,6 +19,7 @@ class CommentResource extends JsonResource
             'vote_score'    => $this->vote_score,
             'user_vote'     => $request->user() ? $this->votes()->where('user_id', $request->user()->id)->first()?->vote_type : null,
             'is_accepted'   => $this->is_accepted,
+            'is_deleted'    => (bool) ($this->is_deleted ?? false),
             'user'          => $this->whenLoaded('user', function () {
                 return [
                     'id'         => $this->user->id,

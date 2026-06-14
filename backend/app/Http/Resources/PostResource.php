@@ -11,7 +11,7 @@ class PostResource extends JsonResource
 
     public function toArray(Request $request): array
     {
-        return [
+        $data = [
             'id'                 => $this->id,
             'title'              => $this->title,
             'body'               => $this->body,
@@ -52,5 +52,19 @@ class PostResource extends JsonResource
             'created_at'         => $this->created_at->toISOString(),
             'updated_at'         => $this->updated_at->toISOString(),
         ];
+
+        if ($this->relationLoaded('currentUserVote')) {
+            $vote = $this->currentUserVote->first();
+            $data['user_vote']    = $vote ? $vote->vote_type : null;
+            $data['user_vote_id'] = $vote ? $vote->id : null;
+        }
+
+        if ($this->relationLoaded('currentUserBookmark')) {
+            $bookmark = $this->currentUserBookmark->first();
+            $data['is_bookmarked'] = $bookmark !== null;
+            $data['bookmark_id']   = $bookmark ? $bookmark->id : null;
+        }
+
+        return $data;
     }
 }

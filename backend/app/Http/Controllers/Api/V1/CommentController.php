@@ -50,16 +50,17 @@ class CommentController extends Controller
         }
 
         try {
-            $actorId = $request->user()->id;
+            $comment = DB::transaction(function () use ($request, $post, $parentId, $parentComment) {
+                $actorId = $request->user()->id;
 
-            $comment = Comment::create([
-                'post_id'   => $post->id,
-                'user_id'   => $actorId,
-                'parent_id' => $parentId,
-                'body'      => $request->input('body'),
-            ]);
+                $comment = Comment::create([
+                    'post_id'   => $post->id,
+                    'user_id'   => $actorId,
+                    'parent_id' => $parentId,
+                    'body'      => $request->input('body'),
+                ]);
 
-            $comment->load('user');
+                $comment->load('user');
 
             if ($parentComment) {
                 if ($parentComment->user_id !== $actorId) {
@@ -151,6 +152,10 @@ class CommentController extends Controller
             return $this->forbiddenResponse('Anda tidak berhak menghapus komentar ini.');
         }
 
+        if ($comment->isSoftDeleted()) {
+            return $this->errorResponse('Komentar sudah dihapus sebelumnya.', null, 422);
+        }
+
         if ($comment->is_accepted) {
             $post->update(['accepted_answer_id' => null, 'is_answered' => false]);
         }
@@ -162,6 +167,10 @@ class CommentController extends Controller
 
     public function forceDestroy(Request $request, Comment $comment): JsonResponse
     {
+        if ($comment->isSoftDeleted()) {
+            return $this->errorResponse('Komentar sudah dihapus sebelumnya.', null, 422);
+        }
+
         if ($comment->is_accepted) {
             $post = Post::find($comment->post_id);
             if ($post && $post->accepted_answer_id === $comment->id) {

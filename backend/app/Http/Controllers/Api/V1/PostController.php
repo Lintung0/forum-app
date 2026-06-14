@@ -105,14 +105,25 @@ class PostController extends Controller
         $user = $request->user();
 
         if (! $user || ! $post->isOwnedBy($user)) {
-            $post->incrementViewCount();
+            $cacheKey = 'post_view:' . $post->id . ':' . $request->ip();
+            if (! Cache::has($cacheKey)) {
+                $post->incrementViewCount();
+                Cache::put($cacheKey, true, now()->addMinutes(15));
+            }
         }
 
         $post->load([
             'user', 'category', 'tags', 'acceptedAnswer.user',
             'topLevelComments' => fn($q) => $q->where('is_deleted', false)->with(['user', 'replies' => fn($r) => $r->where('is_deleted', false)->with('user')])->withCount('replies'),
         ]);
-        $post->loadCount('comments');
+        $post->loadCount(['comments' => fn($q) => $q->active()]);
+
+        if ($user) {
+            $post->load([
+                'currentUserVote' => fn($q) => $q->where('user_id', $user->id),
+                'currentUserBookmark' => fn($q) => $q->where('user_id', $user->id),
+            ]);
+        }
 
         return $this->successResponse(new PostResource($post), 'Detail post berhasil diambil.');
     }
@@ -276,6 +287,7 @@ class PostController extends Controller
         }
 
         $post->update(['status' => 'closed']);
+        $post->refresh()->load(['user', 'category', 'tags']);
 
         return $this->successResponse(new PostResource($post), 'Post berhasil ditutup oleh moderator.');
     }
@@ -287,6 +299,7 @@ class PostController extends Controller
         }
 
         $post->update(['status' => 'open']);
+        $post->refresh()->load(['user', 'category', 'tags']);
 
         return $this->successResponse(new PostResource($post), 'Post berhasil dibuka ulang oleh moderator.');
     }

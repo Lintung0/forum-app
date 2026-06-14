@@ -53,6 +53,13 @@ class UserController extends Controller
                 'created_at'  => $comment->created_at?->toISOString(),
             ]);
 
+        $role = 'user';
+        if ($user->roles->contains('name', 'admin')) {
+            $role = 'admin';
+        } elseif ($user->roles->contains('name', 'moderator')) {
+            $role = 'moderator';
+        }
+
         $data = [
             'id'                => $user->id,
             'username'          => $user->username,
