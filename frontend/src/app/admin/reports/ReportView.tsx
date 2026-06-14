@@ -29,7 +29,7 @@ export default function ReportView() {
     if (!confirm('Tandai laporan ini sebagai SELESAI ditinjau?')) return;
 
     try {
-      await api.patch(`/admin/reports/${id}/resolve`);
+      await api.patch(`/admin/reports/${id}/resolve`, { status: 'resolved' });
       setReports(prev => prev.map(rep => 
         rep.id === id ? { ...rep, status: 'resolved' } : rep
       ));
