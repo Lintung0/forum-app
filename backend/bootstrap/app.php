@@ -28,9 +28,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // ─── Custom Middleware Aliases ───────────────────────────
         $middleware->alias([
-            'role'     => CheckRole::class,
-            'banned'   => CheckBanned::class,
-            'throttle' => ThrottleRequests::class,
+            'role'          => CheckRole::class,
+            'banned'        => CheckBanned::class,
+            'throttle'      => ThrottleRequests::class,
+            'auth.optional' => \App\Http\Middleware\OptionalAuth::class,
         ]);
 
         // ─── Append ke semua API route ───────────────────────────

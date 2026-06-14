@@ -44,7 +44,7 @@ Route::prefix('v1/auth')->name('api.v1.auth.')->group(function () {
 });
 
 
-Route::prefix('v1')->name('api.v1.')->group(function () {
+Route::prefix('v1')->name('api.v1.')->middleware('auth.optional')->group(function () {
     Route::get('categories',            [CategoryController::class, 'index'])->name('categories.index');
     Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
 
