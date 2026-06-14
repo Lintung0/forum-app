@@ -15,12 +15,14 @@ class UserController extends Controller
     public function show(Request $request, User $user)
     {
         $user->loadCount([
-            'followers', 'following', 'posts', 'comments',
+            'followers', 'following', 'comments',
+            'posts as posts_count' => fn($q) => $q->where('status', 'open'),
             'comments as accepted_answers_count' => fn($q) => $q->where('is_accepted', true),
         ]);
 
         $recentPosts = $user->posts()
             ->with('category:id,name,slug')
+            ->where('status', 'open')
             ->latest()
             ->take(10)
             ->get()
