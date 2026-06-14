@@ -103,7 +103,7 @@ class PostController extends Controller
 
         $post->load([
             'user', 'category', 'tags', 'acceptedAnswer.user',
-            'topLevelComments' => fn($q) => $q->with(['user', 'replies.user'])->withCount('replies'),
+            'topLevelComments' => fn($q) => $q->where('is_deleted', false)->with(['user', 'replies' => fn($r) => $r->where('is_deleted', false)->with('user')])->withCount('replies'),
         ]);
         $post->loadCount('comments');
 

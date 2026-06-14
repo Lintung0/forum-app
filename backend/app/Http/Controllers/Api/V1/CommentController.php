@@ -22,7 +22,8 @@ class CommentController extends Controller
     public function index(Request $request, Post $post): JsonResponse
     {
         $comments = $post->topLevelComments()
-            ->with(['user', 'replies' => fn($q) => $q->with('user')->orderBy('created_at')])
+            ->where('is_deleted', false)
+            ->with(['user', 'replies' => fn($q) => $q->where('is_deleted', false)->with('user')->orderBy('created_at')])
             ->withCount('replies')
             ->paginate(min((int) $request->input('per_page', 20), 50));
 
