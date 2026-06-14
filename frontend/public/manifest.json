@@ -1,0 +1,17 @@
+{
+  "name": "Voxra Forum",
+  "short_name": "Voxra",
+  "description": "A modern forum for tech enthusiasts",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090a0f",
+  "theme_color": "#e95723",
+  "icons": [
+    {
+      "src": "/next.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

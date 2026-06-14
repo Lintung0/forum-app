@@ -43,7 +43,7 @@ export function ProfileCard({ user: initialUser }: { user: UserProfileData }) {
           return;
         }
 
-        const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://127.0.0.1:8000';
+        const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8000';
         const res = await fetch(`${BACKEND_URL}/api/v1/users/${targetUsername}`, {
           method: 'GET',
           headers: {
@@ -92,7 +92,7 @@ export function ProfileCard({ user: initialUser }: { user: UserProfileData }) {
 
     try {
       const token = localStorage.getItem('auth_token');
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://127.0.0.1:8000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8000';
 
       const endpoint = `${BACKEND_URL}/api/v1/users/${user.username}/${type}`;
       console.log(`📡 Meminta data dari: ${endpoint}`);
@@ -139,104 +139,108 @@ export function ProfileCard({ user: initialUser }: { user: UserProfileData }) {
 
   return (
     <>
-      <Card className="bg-[#0f1115] border-[#1e2129] text-white rounded-xl overflow-hidden shadow-xl">
-        <CardContent className="p-5 flex flex-col items-center text-center space-y-4">
+      <Card className="bg-[#13151a] border border-[#1e222b] text-white rounded-2xl overflow-hidden shadow-2xl shadow-black/30">
+        <CardContent className="p-6 flex flex-col items-center text-center space-y-5">
 
-          {/* Avatar */}
-          <div className="relative group pt-2">
-            <Avatar className="w-24 h-24 border-2 border-[#e95723]/30 group-hover:border-[#e95723] transition-colors shadow-lg">
+          {}
+          <div className="relative group pt-4">
+            <div className="absolute inset-0 bg-[#e95723]/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <Avatar className="w-28 h-28 border-4 border-[#1e222b] group-hover:border-[#e95723] transition-all duration-300 shadow-2xl relative z-10">
               <AvatarImage src={user.avatar_url ?? undefined} />
-              <AvatarFallback className="text-2xl bg-[#16181d] text-gray-300 font-black">
+              <AvatarFallback className="text-3xl bg-[#1a1d24] text-gray-300 font-black">
                 {user.username ? user.username[0].toUpperCase() : 'U'}
               </AvatarFallback>
             </Avatar>
-            <span className="absolute bottom-0 right-1 bg-[#e95723] text-white text-[10px] font-black px-2 py-0.5 rounded-full border border-[#0f1115]">
+            <span className="absolute bottom-1 right-1 bg-[#e95723] text-white text-[11px] font-black px-2.5 py-1 rounded-full border-2 border-[#13151a] z-20 shadow-lg">
               LVL {user.level ?? 1}
             </span>
           </div>
 
-          {/* Username & Bio */}
-          <div className="space-y-1 w-full">
-            <h2 className="text-lg font-bold tracking-tight">@{user.username}</h2>
-            <p className="text-xs text-gray-400 font-normal leading-relaxed px-2 line-clamp-3">
-              {user.bio || 'No bio description written yet.'}
+          {}
+          <div className="space-y-2 w-full">
+            <h2 className="text-xl font-black tracking-tight text-white leading-none">@{user.username}</h2>
+            <div className="bg-[#e95723]/10 text-[#e95723] text-[10px] font-black px-3 py-1 rounded-full inline-block uppercase tracking-wider">
+              Expert Contributor
+            </div>
+            <p className="text-sm text-gray-400 font-medium leading-relaxed px-4 pt-2">
+              {user.bio || 'This user prefers to keep their bio a mystery.'}
             </p>
           </div>
 
-          {/* Tombol Edit & Logout — hanya profil sendiri */}
+          {}
           {isMyOwnProfile && (
-            <div className="w-full space-y-2 pt-1">
+            <div className="w-full grid grid-cols-2 gap-3 pt-2">
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => setShowEditModal(true)}
-                className="w-full text-xs h-8 border-[#22252e] bg-[#16181d] hover:bg-[#22252e] text-gray-300 hover:text-white rounded-lg gap-1.5 font-medium"
+                className="w-full text-[11px] h-9 border-[#22252e] bg-[#1a1d24] hover:bg-[#22252e] text-gray-300 hover:text-white rounded-xl gap-2 font-bold transition-all"
               >
-                <Edit3 className="h-3 w-3" /> Edit Profile
+                <Edit3 className="h-3.5 w-3.5" /> Edit Profile
               </Button>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={handleLogout}
-                className="w-full text-xs h-8 border-red-900/40 bg-red-950/20 hover:bg-red-900/30 text-red-400 hover:text-red-300 rounded-lg gap-1.5 font-medium"
+                className="w-full text-[11px] h-9 border-red-900/40 bg-red-950/20 hover:bg-red-900/40 text-red-400 hover:text-red-300 rounded-xl gap-2 font-bold transition-all"
               >
-                <LogOut className="h-3 w-3" /> Logout
+                <LogOut className="h-3.5 w-3.5" /> Logout
               </Button>
             </div>
           )}
 
-          <div className="w-full border-t border-[#1e2129] my-1" />
+          <div className="w-full border-t border-[#1e222b] my-2" />
 
-          {/* Baris 1: Rep, Solusi, Posts */}
-          <div className="grid grid-cols-3 gap-2 w-full text-center">
-            <div className="p-2 bg-[#16181d] rounded-xl border border-[#22252e]">
-              <p className="text-xs font-black text-white">{user.reputation_points ?? 0}</p>
-              <p className="text-[9px] text-gray-500 font-bold mt-0.5 tracking-wide uppercase">Rep</p>
+          {}
+          <div className="grid grid-cols-3 gap-3 w-full">
+            <div className="p-3 bg-[#1a1d24]/50 rounded-2xl border border-[#22252e] shadow-inner">
+              <p className="text-sm font-black text-white tabular-nums">{user.reputation_points ?? 0}</p>
+              <p className="text-[9px] text-gray-500 font-black mt-1 tracking-widest uppercase">Rep</p>
             </div>
-            <div className="p-2 bg-[#16181d] rounded-xl border border-[#22252e]">
-              <p className="text-xs font-black text-[#e95723]">{user.accepted_answers_count ?? 0}</p>
-              <p className="text-[9px] text-gray-500 font-bold mt-0.5 tracking-wide uppercase">Solusi</p>
+            <div className="p-3 bg-[#1a1d24]/50 rounded-2xl border border-[#22252e] shadow-inner">
+              <p className="text-sm font-black text-[#e95723] tabular-nums">{user.accepted_answers_count ?? 0}</p>
+              <p className="text-[9px] text-gray-500 font-black mt-1 tracking-widest uppercase">Solusi</p>
             </div>
-            <div className="p-2 bg-[#16181d] rounded-xl border border-[#22252e]">
-              <p className="text-xs font-black text-white">{user.posts_count ?? 0}</p>
-              <p className="text-[9px] text-gray-500 font-bold mt-0.5 tracking-wide uppercase">Posts</p>
+            <div className="p-3 bg-[#1a1d24]/50 rounded-2xl border border-[#22252e] shadow-inner">
+              <p className="text-sm font-black text-white tabular-nums">{user.posts_count ?? 0}</p>
+              <p className="text-[9px] text-gray-500 font-black mt-1 tracking-widest uppercase">Posts</p>
             </div>
           </div>
 
-          {/* Baris 2: Followers & Following */}
-          <div className="grid grid-cols-2 gap-2 w-full text-center">
+          {}
+          <div className="grid grid-cols-2 gap-3 w-full">
             <button
               type="button"
               onClick={() => openUsersModal('followers')}
-              className="p-2.5 bg-[#16181d] rounded-xl border border-[#22252e] hover:border-[#e95723]/40 hover:bg-[#1e222b] transition-all group cursor-pointer"
+              className="p-3 bg-[#1a1d24]/50 rounded-2xl border border-[#22252e] hover:border-[#e95723]/50 hover:bg-[#e95723]/5 transition-all group cursor-pointer shadow-inner"
             >
-              <p className="text-xs font-black text-white group-hover:text-[#e95723] transition-colors">
+              <p className="text-sm font-black text-white group-hover:text-[#e95723] transition-colors tabular-nums">
                 {user.followers_count ?? 0}
               </p>
-              <p className="text-[9px] text-gray-500 font-bold mt-0.5 tracking-wide uppercase">Pengikut</p>
+              <p className="text-[9px] text-gray-500 font-black mt-1 tracking-widest uppercase">Followers</p>
             </button>
             <button
               type="button"
               onClick={() => openUsersModal('following')}
-              className="p-2.5 bg-[#16181d] rounded-xl border border-[#22252e] hover:border-[#e95723]/40 hover:bg-[#1e222b] transition-all group cursor-pointer"
+              className="p-3 bg-[#1a1d24]/50 rounded-2xl border border-[#22252e] hover:border-[#e95723]/50 hover:bg-[#e95723]/5 transition-all group cursor-pointer shadow-inner"
             >
-              <p className="text-xs font-black text-white group-hover:text-[#e95723] transition-colors">
+              <p className="text-sm font-black text-white group-hover:text-[#e95723] transition-colors tabular-nums">
                 {user.following_count ?? 0}
               </p>
-              <p className="text-[9px] text-gray-500 font-bold mt-0.5 tracking-wide uppercase">Mengikuti</p>
+              <p className="text-[9px] text-gray-500 font-black mt-1 tracking-widest uppercase">Following</p>
             </button>
           </div>
 
-          {/* Member since */}
-          <div className="flex items-center gap-1.5 text-[10px] text-gray-500 font-medium pt-1">
-            <Calendar className="h-3 w-3 text-gray-600" />
-            <span>Member sejak {formattedDate}</span>
+          {}
+          <div className="flex items-center gap-2 text-[10px] text-gray-600 font-bold uppercase tracking-tight pt-2">
+            <Calendar className="h-3.5 w-3.5 text-gray-700" />
+            <span>Member since {formattedDate}</span>
           </div>
 
         </CardContent>
       </Card>
 
-      {/* Modal Followers / Following */}
+      {}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="bg-[#13151a] border border-[#1e222b] text-white max-w-sm rounded-xl">
           <DialogHeader>
@@ -294,7 +298,7 @@ export function ProfileCard({ user: initialUser }: { user: UserProfileData }) {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Profile Modal */}
+      {}
       {showEditModal && (
         <EditProfileModal user={user} onClose={() => setShowEditModal(false)} />
       )}

@@ -35,6 +35,8 @@ export interface Tag {
   id: string;
   name: string;
   slug: string;
+  color?: string;
+  posts_count?: number;
 }
 
 export type Post = PostSummary;

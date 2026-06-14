@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
@@ -18,16 +19,16 @@ class UserSeeder extends Seeder
 
             // ── Admin User ──────────────────────────────────────
             $admin = User::updateOrCreate(
-                ['email' => 'admin@forum.test'],
+                ['username' => 'admin'],
                 [
-                    'username'          => 'admin',
-                    'email'             => 'admin@forum.test',
-                    'password_hash'     => 'Admin@12345',
+                    'email'             => 'admin@gmail.com',
+                    'password_hash'     => Hash::make('secret123'),
                     'bio'               => 'Administrator Forum Diskusi. Kontak saya untuk pertanyaan teknis.',
                     'reputation_points' => 9999,
                     'level'             => 10,
                     'is_banned'         => false,
                     'email_verified_at' => now(),
+                    'username'          => 'admin',
                 ]
             );
 
@@ -42,16 +43,16 @@ class UserSeeder extends Seeder
 
             // ── Moderator User ──────────────────────────────────
             $moderator = User::updateOrCreate(
-                ['email' => 'mod@forum.test'],
+                ['username' => 'moderator'],
                 [
-                    'username'          => 'moderator',
-                    'email'             => 'mod@forum.test',
-                    'password_hash'     => 'Mod@12345',
+                    'email'             => 'mod@gmail.com',
+                    'password_hash'     => Hash::make('secret123'),
                     'bio'               => 'Moderator Forum Diskusi.',
                     'reputation_points' => 1500,
                     'level'             => 5,
                     'is_banned'         => false,
                     'email_verified_at' => now(),
+                    'username'          => 'moderator',
                 ]
             );
 
@@ -88,8 +89,8 @@ class UserSeeder extends Seeder
         $this->command->table(
             ['Email', 'Username', 'Password', 'Role'],
             [
-                ['admin@forum.test', 'admin',      'Admin@12345', 'admin, user'],
-                ['mod@forum.test',   'moderator',  'Mod@12345',   'moderator, user'],
+                ['admin@gmail.com', 'admin',      'secret123', 'admin, user'],
+                ['mod@gmail.com',   'moderator',  'secret123',   'moderator, user'],
                 ['user@forum.test',  'sampleuser', 'User@12345',  'user'],
             ]
         );

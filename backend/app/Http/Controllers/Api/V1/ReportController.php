@@ -21,12 +21,12 @@ class ReportController extends Controller
             'description' => ['nullable', 'string'],
         ]);
 
-        // Tidak bisa report diri sendiri
+        
         if ($validated['target_type'] === 'user' && $validated['target_id'] === $request->user()->id) {
             return $this->errorResponse('Tidak bisa melaporkan diri sendiri.', null, 422);
         }
 
-        // Cek duplikat report
+        
         $isDuplicate = Report::where('reporter_id', $request->user()->id)
             ->where('target_id', $validated['target_id'])
             ->where('target_type', $validated['target_type'])

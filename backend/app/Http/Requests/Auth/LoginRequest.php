@@ -10,7 +10,7 @@ class LoginRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Endpoint publik
+        return true; 
     }
 
     public function rules(): array
@@ -30,9 +30,7 @@ class LoginRequest extends FormRequest
         ];
     }
 
-    /**
-     * Override untuk format JSON seragam.
-     */
+    
     protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(response()->json([

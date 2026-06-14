@@ -5,6 +5,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/layouts/Navbar";
 import Sidebar from "@/components/layouts/Sidebar";
+import MobileNav from "@/components/layouts/MobileNav";
 import Providers from "./providers";
 const geistSans = Geist({
   variable: "--font-sans", 
@@ -20,6 +21,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Voxra - Developer Community",
   description: "Ultra modern discussion forum built with Next.js and Laravel",
+  manifest: "/manifest.json",
+  themeColor: "#e95723",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
 export default function RootLayout({
@@ -37,6 +41,39 @@ export default function RootLayout({
         "dark", 
       )}
     >
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#e95723" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  for(let registration of registrations) {
+                    registration.unregister();
+                    console.log('ServiceWorker unregistered');
+                  }
+                });
+              }
+            `,
+          }}
+        />
+        {/* <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                  }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                  });
+                });
+              }
+            `,
+          }}
+        /> */}
+      </head>
       <body
         className={cn(
           "min-h-full flex flex-col bg-[#0f1115] text-[#f8fafc]",

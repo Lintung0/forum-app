@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { UserProfileData } from '../type';
 
-const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://127.0.0.1:8000';
+const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8000';
 
 interface EditProfileForm {
   username: string;
@@ -118,40 +118,44 @@ export function EditProfileModal({ user, onClose }: EditProfileModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="w-full max-w-md bg-[#0f1115] border border-[#1e2129] rounded-2xl shadow-2xl overflow-hidden">
+      <div className="w-full max-w-md bg-[#13151a] border border-[#1e222b] rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e2129]">
-          <h2 className="text-sm font-bold text-white">Edit Profil</h2>
+        {}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[#1e222b] bg-[#16181d]/50">
+          <div>
+            <h2 className="text-lg font-black text-white tracking-tight">Edit Profile</h2>
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">Customize your identity</p>
+          </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#1e2129] transition-colors"
+            className="p-2 rounded-xl text-gray-500 hover:text-white hover:bg-[#1e222b] transition-all border border-transparent hover:border-[#22252e]"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Body */}
-        <form onSubmit={handleSubmit(onSubmit)} className="p-5 space-y-5">
+        {}
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
 
-          {/* Avatar Upload */}
-          <div className="flex flex-col items-center gap-3">
+          {}
+          <div className="flex flex-col items-center gap-4">
             <div className="relative group">
-              <Avatar className="w-20 h-20 border-2 border-[#e95723]/30">
+              <div className="absolute inset-0 bg-[#e95723]/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <Avatar className="w-24 h-24 border-4 border-[#1e222b] group-hover:border-[#e95723] transition-all duration-300 relative z-10 shadow-2xl">
                 <AvatarImage src={avatarPreview ?? undefined} />
-                <AvatarFallback className="text-xl bg-[#16181d] text-gray-300 font-black">
+                <AvatarFallback className="text-2xl bg-[#1a1d24] text-gray-300 font-black">
                   {user.username[0].toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute inset-0 z-20 flex items-center justify-center rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm"
               >
-                <Camera className="h-5 w-5 text-white" />
+                <Camera className="h-6 w-6 text-white" />
               </button>
             </div>
             <input
@@ -164,76 +168,77 @@ export function EditProfileModal({ user, onClose }: EditProfileModalProps) {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="text-[11px] text-[#e95723] hover:underline font-medium"
+              className="text-[11px] text-[#e95723] hover:text-[#ff6a3a] font-black uppercase tracking-widest transition-colors"
             >
-              {selectedFile ? selectedFile.name : 'Ganti foto profil'}
+              {selectedFile ? selectedFile.name : 'Change Profile Picture'}
             </button>
           </div>
 
-          {/* Username */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300">Username</label>
-            <Input
-              {...register('username', {
-                required: 'Username wajib diisi',
-                minLength: { value: 3, message: 'Minimal 3 karakter' },
-                maxLength: { value: 20, message: 'Maksimal 20 karakter' },
-                pattern: { value: /^[a-zA-Z0-9_]+$/, message: 'Hanya huruf, angka, dan underscore' },
-              })}
-              placeholder="username"
-              className="bg-[#16181d] border-[#22252e] text-white placeholder-gray-600 rounded-xl h-9 text-sm focus-visible:ring-1 focus-visible:ring-[#e95723] focus-visible:border-[#e95723]"
-            />
-            {errors.username && (
-              <p className="text-[11px] text-red-400">{errors.username.message}</p>
-            )}
+          {}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest ml-1">Username</label>
+              <Input
+                {...register('username', {
+                  required: 'Username is required',
+                  minLength: { value: 3, message: 'Minimum 3 characters' },
+                  maxLength: { value: 20, message: 'Maximum 20 characters' },
+                  pattern: { value: /^[a-zA-Z0-9_]+$/, message: 'Alphanumeric and underscores only' },
+                })}
+                placeholder="your_username"
+                className="bg-[#0f1115] border-[#1e222b] text-white placeholder-gray-700 rounded-2xl h-11 text-sm font-medium focus-visible:ring-1 focus-visible:ring-[#e95723] focus-visible:border-[#e95723] transition-all shadow-inner"
+              />
+              {errors.username && (
+                <p className="text-[10px] font-bold text-red-400 ml-1 uppercase tracking-tight">{errors.username.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest ml-1">Bio</label>
+              <Textarea
+                {...register('bio', { maxLength: { value: 200, message: 'Maximum 200 characters' } })}
+                placeholder="Tell us something interesting about yourself..."
+                rows={4}
+                className="bg-[#0f1115] border-[#1e222b] text-white placeholder-gray-700 rounded-2xl text-sm font-medium resize-none focus-visible:ring-1 focus-visible:ring-[#e95723] focus-visible:border-[#e95723] transition-all shadow-inner p-4"
+              />
+              {errors.bio && (
+                <p className="text-[10px] font-bold text-red-400 ml-1 uppercase tracking-tight">{errors.bio.message}</p>
+              )}
+            </div>
           </div>
 
-          {/* Bio */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300">Bio</label>
-            <Textarea
-              {...register('bio', { maxLength: { value: 200, message: 'Maksimal 200 karakter' } })}
-              placeholder="Ceritakan sedikit tentang dirimu..."
-              rows={3}
-              className="bg-[#16181d] border-[#22252e] text-white placeholder-gray-600 rounded-xl text-sm resize-none focus-visible:ring-1 focus-visible:ring-[#e95723] focus-visible:border-[#e95723]"
-            />
-            {errors.bio && (
-              <p className="text-[11px] text-red-400">{errors.bio.message}</p>
-            )}
-          </div>
-
-          {/* Feedback */}
+          {}
           {successMsg && (
-            <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2">
-              <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" />
-              {successMsg}
+            <div className="flex items-center gap-3 text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl px-4 py-3 animate-in slide-in-from-bottom-2 duration-300">
+              <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+              {successMsg.toUpperCase()}
             </div>
           )}
           {errorMsg && (
-            <div className="flex items-center gap-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2">
-              <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
-              {errorMsg}
+            <div className="flex items-center gap-3 text-[11px] font-bold text-red-400 bg-red-500/10 border border-red-500/20 rounded-2xl px-4 py-3 animate-in slide-in-from-bottom-2 duration-300">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              {errorMsg.toUpperCase()}
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex gap-2 pt-1">
+          {}
+          <div className="flex gap-3 pt-2">
             <Button
               type="button"
               onClick={onClose}
               variant="outline"
-              className="flex-1 h-9 text-xs border-[#22252e] bg-[#16181d] hover:bg-[#22252e] text-gray-300 rounded-xl font-medium"
+              className="flex-1 h-11 text-[11px] font-black uppercase tracking-widest border-[#1e222b] bg-[#1a1d24] hover:bg-[#22252e] text-gray-400 hover:text-white rounded-2xl transition-all"
             >
-              Batal
+              Cancel
             </Button>
             <Button
               type="submit"
               disabled={mutation.isPending}
-              className="flex-1 h-9 text-xs bg-[#e95723] hover:bg-[#d0481b] text-white rounded-xl font-bold gap-1.5 disabled:opacity-60"
+              className="flex-1 h-11 text-[11px] font-black uppercase tracking-widest bg-[#e95723] hover:bg-[#d0481b] text-white rounded-2xl shadow-lg shadow-[#e95723]/20 gap-2 disabled:opacity-60 transition-all"
             >
               {mutation.isPending ? (
-                <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Menyimpan...</>
-              ) : 'Simpan Perubahan'}
+                <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</>
+              ) : 'Save Changes'}
             </Button>
           </div>
         </form>

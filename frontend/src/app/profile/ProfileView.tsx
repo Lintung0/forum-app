@@ -10,7 +10,7 @@ import { ProfileApiResponse } from './type';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://127.0.0.1:8000';
+const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8000';
 
 async function fetchProfileData(): Promise<ProfileApiResponse['data']> {
     const token = localStorage.getItem('auth_token');

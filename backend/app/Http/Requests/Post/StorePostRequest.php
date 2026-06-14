@@ -10,7 +10,7 @@ class StorePostRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Auth dihandle middleware auth:sanctum
+        return true; 
     }
 
     public function rules(): array

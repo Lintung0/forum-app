@@ -235,12 +235,25 @@ class PostController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($post, $comment) {
+            DB::transaction(function () use ($post, $comment, $request) {
                 if ($post->accepted_answer_id) {
-                    Comment::where('id', $post->accepted_answer_id)->update(['is_accepted' => false]);
+                    $oldComment = Comment::find($post->accepted_answer_id);
+                    if ($oldComment) {
+                        $oldComment->update(['is_accepted' => false]);
+                        
+                        
+                        $oldComment->user?->deductReputation(15, 'answer_unaccepted', $oldComment->id);
+                    }
                 }
+                
                 $comment->update(['is_accepted' => true]);
                 $post->update(['accepted_answer_id' => $comment->id, 'is_answered' => true]);
+
+                
+                $comment->user?->addReputation(15, 'answer_accepted', $comment->id);
+                
+                
+                $request->user()->addReputation(2, 'accepted_an_answer', $comment->id);
             });
 
             NotificationService::send($comment->user_id, $request->user()->id, 'answer_accepted', $comment->id, 'comment');

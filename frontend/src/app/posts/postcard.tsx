@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
-  ArrowUp,
   MessageSquare,
   Eye,
   CheckCircle2,
@@ -14,6 +13,8 @@ import {
   Edit2,
   Trash2,
   AlertTriangle,
+  ArrowRight,
+  ChevronUp,
 } from "lucide-react";
 import { PostSummary } from "./type";
 import {
@@ -23,9 +24,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://127.0.0.1:8000";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:8000";
 
 function timeAgo(dateStr: string): string {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -35,8 +36,9 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-function VoteBox({ score, postId }: { score: number; postId: string }) {
+function VoteBox({ score, postId, initialVote }: { score: number; postId: string; initialVote?: 'upvote' | 'downvote' | null }) {
   const [localScore, setLocalScore] = useState(score);
+  const [userVote, setUserVote] = useState<'upvote' | 'downvote' | null>(initialVote ?? null);
   const [voting, setVoting] = useState(false);
 
   const handleVote = async (e: React.MouseEvent, type: 'upvote' | 'downvote') => {
@@ -44,6 +46,23 @@ function VoteBox({ score, postId }: { score: number; postId: string }) {
     const token = localStorage.getItem('auth_token');
     if (!token) { alert('Login dulu untuk vote.'); return; }
     if (voting) return;
+
+    const oldVote = userVote;
+    const oldScore = localScore;
+    let newScore = localScore;
+
+    if (userVote === type) {
+      setUserVote(null);
+      newScore = type === 'upvote' ? localScore - 1 : localScore + 1;
+    } else if (userVote === null) {
+      setUserVote(type);
+      newScore = type === 'upvote' ? localScore + 1 : localScore - 1;
+    } else {
+      setUserVote(type);
+      newScore = type === 'upvote' ? localScore + 2 : localScore - 2;
+    }
+    setLocalScore(newScore);
+
     setVoting(true);
     try {
       const res = await fetch(`${BACKEND_URL}/api/v1/votes`, {
@@ -53,16 +72,45 @@ function VoteBox({ score, postId }: { score: number; postId: string }) {
       });
       if (res.ok) {
         const json = await res.json();
-        setLocalScore(json.data?.vote_score ?? localScore);
+        setLocalScore(json.data?.vote_score ?? newScore);
+      } else {
+        setUserVote(oldVote);
+        setLocalScore(oldScore);
       }
-    } catch {} finally { setVoting(false); }
+    } catch {
+      setUserVote(oldVote);
+      setLocalScore(oldScore);
+    } finally { setVoting(false); }
   };
 
   return (
-    <div className="flex flex-col items-center justify-start pt-0.5 min-w-[36px]">
-      <ArrowUp className={`h-4 w-4 cursor-pointer transition-colors ${voting ? 'text-gray-700' : 'text-gray-600 hover:text-[#e95723]'}`} onClick={(e) => handleVote(e, 'upvote')} />
-      <span className={`text-xs font-bold my-0.5 tabular-nums ${localScore > 0 ? 'text-[#e95723]' : localScore < 0 ? 'text-blue-400' : 'text-gray-500'}`}>{localScore}</span>
-      <ArrowUp className={`h-4 w-4 rotate-180 cursor-pointer transition-colors ${voting ? 'text-gray-700' : 'text-gray-600 hover:text-blue-400'}`} onClick={(e) => handleVote(e, 'downvote')} />
+    <div className="flex flex-col items-center justify-start min-w-[48px] bg-gray-900 rounded-lg py-3 self-start border border-gray-800">
+      <button 
+        onClick={(e) => handleVote(e, 'upvote')}
+        disabled={voting}
+        className={cn(
+          "p-1.5 rounded-md transition-all",
+          userVote === 'upvote' ? "bg-[#e95723] text-white" : "text-gray-600 hover:text-white hover:bg-gray-800"
+        )}
+      >
+        <ChevronUp className="h-5 w-5" />
+      </button>
+      <span className={cn(
+        "text-sm font-bold my-1 tabular-nums",
+        userVote === 'upvote' ? "text-[#e95723]" : userVote === 'downvote' ? "text-blue-400" : "text-gray-400"
+      )}>
+        {localScore}
+      </span>
+      <button 
+        onClick={(e) => handleVote(e, 'downvote')}
+        disabled={voting}
+        className={cn(
+          "p-1.5 rounded-md transition-all",
+          userVote === 'downvote' ? "bg-blue-500 text-white" : "text-gray-600 hover:text-white hover:bg-gray-800"
+        )}
+      >
+        <ChevronUp className="h-5 w-5 rotate-180" />
+      </button>
     </div>
   );
 }
@@ -89,10 +137,7 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
     }
   }, []);
 
-  const isMyPost =
-    currentUserId !== null &&
-    
-    String(post.user?.id) === currentUserId;
+  const isMyPost = currentUserId !== null && String(post.user?.id) === currentUserId;
 
   const handleCardClick = () => router.push(`/posts/${post.id}`);
 
@@ -100,6 +145,7 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
     e.stopPropagation();
     if (authorUsername) router.push(`/profile/${authorUsername}`);
   };
+  
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!confirm("Hapus diskusi ini?")) return;
@@ -110,174 +156,128 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        if (onDelete) {
-          onDelete(post.id);
-        } else {
-          window.location.reload();
-        }
-      } else {
-        const json = await res.json();
-        alert(json.message || "Gagal menghapus postingan.");
+        if (onDelete) onDelete(post.id);
+        else window.location.reload();
       }
-    } catch {
-      alert("Terjadi kesalahan koneksi.");
-    }
+    } catch {}
   };
+
   const handleReport = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
       const token = localStorage.getItem("auth_token");
-      const res = await fetch(`${BACKEND_URL}/api/v1/reports`, {
+      await fetch(`${BACKEND_URL}/api/v1/reports`, {
         method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          target_type: "post",
-          target_id: post.id,
-          reason: "Konten tidak pantas",
-        }),
+        headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ target_type: "post", target_id: post.id, reason: "Konten tidak pantas" }),
       });
-      if (res.ok) {
-        alert("Postingan berhasil dilaporkan. Terima kasih!");
-      } else {
-        const json = await res.json();
-        alert(json.message || "Gagal melaporkan postingan.");
-      }
-    } catch {
       alert("Postingan berhasil dilaporkan.");
-    }
+    } catch {}
   };
 
   return (
     <div
       onClick={handleCardClick}
-      className="block group cursor-pointer w-full select-none"
+      className="block group cursor-pointer w-full"
     >
-      <Card className="bg-[#13151a] border border-[#1e222b] hover:border-[#e95723]/30 hover:bg-[#16181d] transition-all duration-150 rounded-lg overflow-hidden">
-        <div className="flex gap-3 p-3 relative">
-          <VoteBox score={post.vote_score} postId={post.id} />
+      <Card className={`relative overflow-hidden bg-[#0d0e12] border transition-all rounded-xl ${
+        post.is_answered ? 'border-emerald-500/30' : 'border-gray-800 group-hover:border-gray-700'
+      }`}>
+        <div className="flex gap-6 p-6 relative z-10">
+          <VoteBox score={post.vote_score} postId={post.id} initialVote={(post as any).user_vote} />
 
-          <div className="flex-1 min-w-0 space-y-1.5">
-            {/* Header */}
-            <div className="flex items-center gap-1.5 flex-wrap text-[10px] text-gray-500 pr-6">
+          <div className="flex-1 min-w-0 space-y-4">
+            <div className="flex items-center gap-3 flex-wrap text-[10px] font-bold uppercase tracking-wider text-gray-500 pr-8">
               {post.category && (
-                <>
-                  <span className="text-[#e95723] font-medium hover:underline">
-                    d/{post.category.slug}
-                  </span>
-                  <span>•</span>
-                </>
+                <span className="text-[#e95723] bg-[#e95723]/10 px-3 py-1 rounded-md border border-[#e95723]/10">
+                  {post.category.name}
+                </span>
               )}
+              <span className="text-gray-700">•</span>
               <div
                 onClick={handleAuthorClick}
-                className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 hover:text-white transition-all"
               >
-                <Avatar className="w-3.5 h-3.5 cursor-pointer hover:opacity-80 transition-opacity">
+                <Avatar className="w-5 h-5 border border-gray-800">
                   <AvatarImage src={post.user?.avatar_url ?? undefined} />
-                  <AvatarFallback className="text-[8px] bg-[#2c323f] text-white font-bold">
-                    {authorUsername?.[0]?.toUpperCase() ?? "A"}
+                  <AvatarFallback className="text-[8px] bg-gray-800 text-gray-400 font-bold uppercase">
+                    {authorUsername?.[0] ?? "A"}
                   </AvatarFallback>
                 </Avatar>
-                <span className="font-semibold cursor-pointer hover:underline text-gray-400 hover:text-[#e95723]">
+                <span className="text-gray-400 hover:text-[#e95723] transition-colors">
                   @{authorUsername ?? "author"}
                 </span>
               </div>
-              <span>•</span>
-              <span>{timeAgo(post.created_at)}</span>
-            </div>
-
-            {/* Judul */}
-            <div className="flex items-start gap-2">
-              <h2 className="text-sm font-semibold text-gray-100 leading-snug group-hover:text-white transition-colors line-clamp-2">
-                {post.title}
-              </h2>
+              <span className="text-gray-700">•</span>
+              <span className="text-gray-600">{timeAgo(post.created_at)}</span>
+              
               {post.is_answered && (
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-400/5 px-3 py-1 rounded-md border border-emerald-400/10">
+                  <CheckCircle2 className="h-3 w-3" />
+                  <span className="font-bold">Solved</span>
+                </div>
               )}
             </div>
 
-            {/* Body */}
-            <p className="text-xs text-gray-500 line-clamp-1 leading-relaxed">
-              {post.body}
-            </p>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold text-white leading-tight group-hover:text-[#e95723] transition-colors line-clamp-1">
+                {post.title}
+              </h2>
+              <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">
+                {post.body}
+              </p>
+            </div>
 
-            {/* Footer */}
-            <div className="flex items-center gap-3 pt-0.5 flex-wrap">
+            <div className="flex items-center justify-between pt-4 flex-wrap gap-4 border-t border-gray-800/50">
               <div
-                className="flex items-center gap-1 flex-wrap"
+                className="flex items-center gap-2 flex-wrap"
                 onClick={(e) => e.stopPropagation()}
               >
                 {post.tags?.slice(0, 3).map((tag) => (
                   <Badge
                     key={tag.id}
                     variant="outline"
-                    className="text-[10px] px-1.5 py-0 h-4 border-[#2c323f] bg-transparent font-normal cursor-pointer hover:opacity-80"
-                    style={{ color: tag.color, borderColor: `${tag.color}40` }}
+                    className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 border-gray-800 bg-gray-900/50 text-gray-400 rounded-md"
                   >
-                    {tag.name}
+                    #{tag.name}
                   </Badge>
                 ))}
               </div>
-              <div className="flex items-center gap-3 text-[10px] text-gray-600 ml-auto">
-                <span className="flex items-center gap-1 hover:text-gray-400 transition-colors">
-                  <MessageSquare className="h-3 w-3" />
+              
+              <div className="flex items-center gap-4 text-[10px] font-bold text-gray-500 uppercase ml-auto">
+                <span className="flex items-center gap-2 hover:text-white transition-all">
+                  <MessageSquare className="h-3.5 w-3.5" />
                   {post.comments_count}
-                  <span className="hidden sm:inline">comments</span>
                 </span>
-                <span className="flex items-center gap-1">
-                  <Eye className="h-3 w-3" />
+                <span className="flex items-center gap-2">
+                  <Eye className="h-3.5 w-3.5" />
                   {post.view_count}
                 </span>
+                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
           </div>
 
-          {/* Dropdown titik 3 */}
-          <div
-            className="absolute top-2 right-2 z-10"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-gray-500 hover:text-white hover:bg-[#22252e] rounded-md"
-                >
-                  <MoreVertical className="h-3.5 w-3.5" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-600 hover:text-white hover:bg-gray-800 rounded-lg">
+                  <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-36 bg-[#13151a] border border-[#1e222b] text-gray-300 p-1"
-              >
+              <DropdownMenuContent align="end" className="w-48 bg-[#0d0e12] border border-gray-800 p-1 rounded-xl">
                 {isMyPost ? (
                   <>
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/posts/${post.id}/edit`);
-                      }}
-                      className="gap-2 text-xs py-1.5 cursor-pointer focus:bg-[#e95723] focus:text-white"
-                    >
-                      <Edit2 className="h-3 w-3" /> Edit
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/posts/${post.id}/edit`); }} className="gap-2 text-[10px] font-bold uppercase py-2.5 px-4 cursor-pointer focus:bg-gray-800 rounded-lg">
+                      <Edit2 className="h-3.5 w-3.5" /> Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={handleDelete}
-                      className="gap-2 text-xs py-1.5 text-red-500 cursor-pointer focus:bg-red-950/40 focus:text-red-400"
-                    >
-                      <Trash2 className="h-3 w-3" /> Hapus
+                    <DropdownMenuItem onClick={handleDelete} className="gap-2 text-[10px] font-bold uppercase py-2.5 px-4 text-red-500 cursor-pointer focus:bg-red-950/20 focus:text-red-400 rounded-lg">
+                      <Trash2 className="h-3.5 w-3.5" /> Delete
                     </DropdownMenuItem>
                   </>
                 ) : (
-                  <DropdownMenuItem
-                    onClick={handleReport}
-                    className="gap-2 text-xs py-1.5 text-yellow-500 cursor-pointer focus:bg-yellow-950/30 focus:text-yellow-400"
-                  >
-                    <AlertTriangle className="h-3 w-3" /> Laporkan
+                  <DropdownMenuItem onClick={handleReport} className="gap-2 text-[10px] font-bold uppercase py-2.5 px-4 text-yellow-500 cursor-pointer focus:bg-yellow-950/20 focus:text-yellow-400 rounded-lg">
+                    <AlertTriangle className="h-3.5 w-3.5" /> Report
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>

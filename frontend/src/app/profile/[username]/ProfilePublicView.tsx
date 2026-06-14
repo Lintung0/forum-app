@@ -12,7 +12,7 @@ import { ProfileCard } from "../components/profile-card";
 import { ActivityTabs } from "../components/activity-tabs";
 
 const BACKEND_API_URL =
-  process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://127.0.0.1:8000";
+  process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:8000";
 
 async function fetchPublicProfile(username: string) {
   if (!username || username === "undefined") {
@@ -119,7 +119,7 @@ export default function ProfilePublicView({ username }: { username: string }) {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 p-4 md:p-6">
-      {/* Tombol Kembali */}
+      {}
       <Button
         variant="ghost"
         size="sm"
@@ -130,7 +130,7 @@ export default function ProfilePublicView({ username }: { username: string }) {
       </Button>
 
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 items-start">
-        {/* SIDEBAR KARTU PROFIL */}
+        {}
         <aside className="w-full lg:sticky lg:top-6">
           {isOwnProfile ? (
             <ProfileCard user={profileData.user} />
@@ -139,7 +139,7 @@ export default function ProfilePublicView({ username }: { username: string }) {
           )}
         </aside>
 
-        {/* KONTEN UTAMA */}
+        {}
         <main className="w-full bg-[#0f1115] border border-[#1e2129] rounded-xl p-4 md:p-6 min-h-[500px]">
           {isOwnProfile ? (
             <Tabs defaultValue="posts" className="w-full space-y-4">

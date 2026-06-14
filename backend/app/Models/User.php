@@ -21,9 +21,7 @@ class User extends Authenticatable
         return 'username';
     }
 
-    /**
-     * Kolom yang boleh diisi secara mass assignment.
-     */
+    
     protected $fillable = [
         'username',
         'email',
@@ -35,9 +33,7 @@ class User extends Authenticatable
         'is_banned',
     ];
 
-    /**
-     * Kolom yang disembunyikan dari JSON response.
-     */
+    
     protected $hidden = [
         'password_hash',
         'remember_token',
@@ -50,9 +46,7 @@ class User extends Authenticatable
     ];
 
 
-    /**
-     * Type casting kolom.
-     */
+    
     protected function casts(): array
     {
         return [
@@ -63,21 +57,16 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Override nama kolom password untuk Laravel Auth.
-     * Penting agar Sanctum & Hash::check() berjalan benar.
-     */
+    
     public function getAuthPasswordName(): string
     {
         return 'password_hash';
     }
 
-    /**
-     * Auto-hash password saat di-set.
-     */
+    
     public function setPasswordHashAttribute(string $value): void
     {
-        // Hindari double-hashing jika sudah berupa bcrypt string
+        
         if (! str_starts_with($value, '$2y$') && ! str_starts_with($value, '$argon')) {
             $this->attributes['password_hash'] = bcrypt($value);
         } else {
@@ -149,9 +138,7 @@ class User extends Authenticatable
         return $this->roles()->where('name', $roleName)->exists();
     }
 
-    /**
-     * Cek apakah user memiliki salah satu dari beberapa role.
-     */
+    
     public function hasAnyRole(array $roles): bool
     {
         if ($this->relationLoaded('roles')) {

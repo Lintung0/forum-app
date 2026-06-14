@@ -16,16 +16,14 @@ class TagController extends Controller
 {
     use ApiResponse;
 
-    /**
-     * List semua tags (searchable + paginated).
-     * GET /api/v1/tags?q=laravel&per_page=20
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $cacheKey = 'tags:' . md5($request->getQueryString() ?? '');
 
         $tags = Cache::remember($cacheKey, 300, function () use ($request) {
             return Tag::query()
+                ->withCount('posts')
                 ->when(
                     $request->filled('q'),
                     fn($q) => $q->where('name', 'like', '%' . $request->input('q') . '%')
@@ -40,10 +38,7 @@ class TagController extends Controller
         );
     }
 
-    /**
-     * Detail satu tag.
-     * GET /api/v1/tags/{tag}
-     */
+    
     public function show(Tag $tag): JsonResponse
     {
         return $this->successResponse(
@@ -52,14 +47,11 @@ class TagController extends Controller
         );
     }
 
-    // ────────────────────────────────────────────────────────
-    // ADMIN METHODS
-    // ────────────────────────────────────────────────────────
+    
+    
+    
 
-    /**
-     * Buat tag baru.
-     * POST /api/v1/admin/tags
-     */
+    
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -70,16 +62,16 @@ class TagController extends Controller
 
         $validated['slug'] ??= Str::slug($validated['name']);
 
+        $tag = Tag::create($validated);
+        Cache::forget('tags:' . md5(''));
+
         return $this->createdResponse(
-            new TagResource(Tag::create($validated)),
+            new TagResource($tag),
             'Tag berhasil dibuat.'
         );
     }
 
-    /**
-     * Update tag.
-     * PUT|PATCH /api/v1/admin/tags/{tag}
-     */
+    
     public function update(Request $request, Tag $tag): JsonResponse
     {
         $validated = $request->validate([
@@ -96,19 +88,21 @@ class TagController extends Controller
 
         $tag->update($validated);
 
+        Cache::forget('tags:' . md5(''));
+
         return $this->successResponse(
             new TagResource($tag),
             'Tag berhasil diupdate.'
         );
     }
 
-    /**
-     * Hapus tag.
-     * DELETE /api/v1/admin/tags/{tag}
-     */
+    
     public function destroy(Tag $tag): JsonResponse
     {
         $tag->delete();
+
+        Cache::forget('tags:' . md5(''));
+
         return $this->noContentResponse('Tag berhasil dihapus.');
     }
 }

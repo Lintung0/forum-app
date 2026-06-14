@@ -30,24 +30,24 @@ class PostEditHistory extends Model
         ];
     }
 
-    // ────────────────────────────────────────────────────────
-    // RELATIONSHIPS
-    // ────────────────────────────────────────────────────────
+    
+    
+    
 
     public function post(): BelongsTo
     {
         return $this->belongsTo(Post::class, 'post_id');
     }
 
-    /** User yang melakukan edit. Nama kolom 'edited_by' bukan 'user_id'. */
+    
     public function editor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'edited_by');
     }
 
-    // ────────────────────────────────────────────────────────
-    // BOOT
-    // ────────────────────────────────────────────────────────
+    
+    
+    
 
     protected static function boot(): void
     {

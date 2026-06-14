@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://127.0.0.1:8000';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8000';
 
 interface ActivityTabsProps {
   type: 'posts' | 'comments';
@@ -71,7 +71,7 @@ export function ActivityTabs({ type, items, isOwner = false, onDelete }: Activit
             key={post.id}
             className={`relative mb-2 ${deletingId === post.id ? 'opacity-50 pointer-events-none' : ''}`}
           >
-            {/* Link cover seluruh card */}
+            {}
             <Link href={`/posts/${post.id}`} className="block">
               <Card className="bg-[#13151a] border border-[#1e222b] hover:border-[#2c323f] p-4 flex items-center justify-between transition-all group rounded-xl pr-10">
                 <div className="flex items-center gap-3 min-w-0">
@@ -97,7 +97,7 @@ export function ActivityTabs({ type, items, isOwner = false, onDelete }: Activit
               </Card>
             </Link>
 
-            {/* ✅ Dropdown di LUAR Link — z-20 agar tidak diintercept Link */}
+            {}
             {isOwner && (
               <div className="absolute top-1/2 -translate-y-1/2 right-2 z-20">
                 <DropdownMenu>

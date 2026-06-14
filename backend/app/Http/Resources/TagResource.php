@@ -17,6 +17,7 @@ class TagResource extends JsonResource
             'slug'        => $this->slug,
             'color'       => $this->color,
             'usage_count' => $this->usage_count,
+            'posts_count' => $this->posts_count,
             'created_at'  => $this->created_at?->toISOString(),
         ];
     }

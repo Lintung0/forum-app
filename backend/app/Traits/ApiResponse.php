@@ -7,9 +7,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 trait ApiResponse
 {
-    /**
-     * Response sukses standar (200).
-     */
+    
     protected function successResponse(
         mixed $data,
         string $message = 'Berhasil.',
@@ -23,9 +21,7 @@ trait ApiResponse
         ], $statusCode);
     }
 
-    /**
-     * Response sukses untuk data yang baru dibuat (201).
-     */
+    
     protected function createdResponse(
         mixed $data,
         string $message = 'Data berhasil dibuat.'
@@ -33,9 +29,7 @@ trait ApiResponse
         return $this->successResponse($data, $message, 201);
     }
 
-    /**
-     * Response sukses tanpa data (operasi delete, dll).
-     */
+    
     protected function noContentResponse(
         string $message = 'Operasi berhasil dilakukan.'
     ): JsonResponse {
@@ -47,9 +41,7 @@ trait ApiResponse
         ], 200);
     }
 
-    /**
-     * Response error generik.
-     */
+    
     protected function errorResponse(
         string $message = 'Terjadi kesalahan.',
         mixed $errors = null,
@@ -63,37 +55,28 @@ trait ApiResponse
         ], $statusCode);
     }
 
-    /**
-     * Response 404 Not Found.
-     */
+    
     protected function notFoundResponse(
         string $message = 'Data tidak ditemukan.'
     ): JsonResponse {
         return $this->errorResponse($message, null, 404);
     }
 
-    /**
-     * Response 401 Unauthenticated.
-     */
+    
     protected function unauthorizedResponse(
         string $message = 'Unauthenticated. Silakan login.'
     ): JsonResponse {
         return $this->errorResponse($message, null, 401);
     }
 
-    /**
-     * Response 403 Forbidden.
-     */
+    
     protected function forbiddenResponse(
         string $message = 'Anda tidak memiliki akses ke resource ini.'
     ): JsonResponse {
         return $this->errorResponse($message, null, 403);
     }
 
-    /**
-     * Response untuk data paginasi.
-     * Menjaga format JSON yang seragam dengan meta & links.
-     */
+    
     protected function paginatedResponse(
         LengthAwarePaginator $paginator,
         string $message = 'Berhasil.',

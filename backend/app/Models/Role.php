@@ -13,9 +13,7 @@ class Role extends Model
 
     protected $table = 'roles';
 
-    /**
-     * Tabel hanya memiliki created_at, tidak ada updated_at.
-     */
+    
     const UPDATED_AT = null;
 
     protected $fillable = [

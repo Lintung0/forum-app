@@ -17,12 +17,12 @@ class StoreCommentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'body'      => ['required', 'string', 'min:5', 'max:10000'],
+            'body'      => ['required', 'string'],
             'parent_id' => [
                 'nullable',
                 'uuid',
                 'exists:comments,id',
-                // Custom rule: validasi parent_id ada di post yang sama + max 1 level nesting
+                
                 function (string $attribute, mixed $value, \Closure $fail) {
                     if ($value === null) return;
 
@@ -39,7 +39,7 @@ class StoreCommentRequest extends FormRequest
                         return;
                     }
 
-                    // Batasi 1 level: tidak boleh reply dari reply
+                    
                     if ($parentComment->parent_id !== null) {
                         $fail('Tidak bisa reply dari reply. Hanya boleh 1 level nested.');
                     }

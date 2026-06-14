@@ -17,6 +17,7 @@ class CommentResource extends JsonResource
             'parent_id'     => $this->parent_id,
             'body'          => $this->body,
             'vote_score'    => $this->vote_score,
+            'user_vote'     => $request->user() ? $this->votes()->where('user_id', $request->user()->id)->first()?->vote_type : null,
             'is_accepted'   => $this->is_accepted,
             'user'          => $this->whenLoaded('user', function () {
                 return [
@@ -26,7 +27,7 @@ class CommentResource extends JsonResource
                     'level'      => $this->user->level,
                 ];
             }),
-            // Replies 1 level nested
+            
             'replies'       => $this->whenLoaded('replies', function () {
                 return CommentResource::collection($this->replies);
             }),

@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -15,18 +16,17 @@ class CategoryController extends Controller
 {
     use ApiResponse;
 
-    /**
-     * List semua root categories beserta child-nya.
-     * GET /api/v1/categories
-     */
+    
     public function index(): JsonResponse
     {
-        $categories = Category::query()
-            ->with('children')
-            ->withCount('posts')
-            ->whereNull('parent_id') // Root categories saja
-            ->orderBy('name')
-            ->get();
+        $categories = Cache::remember('categories:all', 600, function () {
+            return Category::query()
+                ->with('children')
+                ->withCount('posts')
+                ->whereNull('parent_id')
+                ->orderBy('name')
+                ->get();
+        });
 
         return $this->successResponse(
             CategoryResource::collection($categories),
@@ -34,10 +34,7 @@ class CategoryController extends Controller
         );
     }
 
-    /**
-     * Detail satu kategori.
-     * GET /api/v1/categories/{category}
-     */
+    
     public function show(Category $category): JsonResponse
     {
         $category->load('parent', 'children');
@@ -49,14 +46,31 @@ class CategoryController extends Controller
         );
     }
 
-    // ────────────────────────────────────────────────────────
-    // ADMIN METHODS
-    // ────────────────────────────────────────────────────────
+    
+    public function adminIndex(Request $request): JsonResponse
+    {
+        $query = Category::query()
+            ->withCount('posts')
+            ->orderBy('name');
 
-    /**
-     * Buat kategori baru.
-     * POST /api/v1/admin/categories
-     */
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $categories = $query->paginate($request->input('limit', 10));
+
+        return $this->successResponse(
+            CategoryResource::collection($categories),
+            'Daftar kategori berhasil diambil untuk admin.'
+        );
+    }
+
+    
+    
+    
+
+    
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -71,16 +85,15 @@ class CategoryController extends Controller
         $category = Category::create($validated);
         $category->load('parent');
 
+        Cache::forget('categories:all');
+
         return $this->createdResponse(
             new CategoryResource($category),
             'Kategori berhasil dibuat.'
         );
     }
 
-    /**
-     * Update kategori.
-     * PUT|PATCH /api/v1/admin/categories/{category}
-     */
+    
     public function update(Request $request, Category $category): JsonResponse
     {
         $validated = $request->validate([
@@ -106,16 +119,15 @@ class CategoryController extends Controller
         $category->update($validated);
         $category->load('parent', 'children');
 
+        Cache::forget('categories:all');
+
         return $this->successResponse(
             new CategoryResource($category),
             'Kategori berhasil diupdate.'
         );
     }
 
-    /**
-     * Hapus kategori.
-     * DELETE /api/v1/admin/categories/{category}
-     */
+    
     public function destroy(Category $category): JsonResponse
     {
         if ($category->posts()->exists()) {
@@ -126,9 +138,10 @@ class CategoryController extends Controller
             );
         }
 
-        // Pindahkan sub-kategori ke root
         $category->children()->update(['parent_id' => null]);
         $category->delete();
+
+        Cache::forget('categories:all');
 
         return $this->noContentResponse('Kategori berhasil dihapus.');
     }

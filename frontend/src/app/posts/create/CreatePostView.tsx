@@ -15,8 +15,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import { CategoryOption, TagOption } from "./type";
 import { createPostAction } from "./actions";
 
@@ -39,6 +40,21 @@ export default function CreatePostView({
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+    ],
+    content: body,
+    onUpdate: ({ editor }) => {
+      setBody(editor.getHTML());
+    },
+    editorProps: {
+      attributes: {
+        class: "prose dark:prose-invert min-h-[200px] outline-none",
+      },
+    },
+  });
 
   
   useEffect(() => {
@@ -186,7 +202,7 @@ export default function CreatePostView({
                   <Badge
                     key={tag.id}
                     onClick={() => handleTagClick(tag.id)}
-                    className={`cursor-pointer ${selectedTagIds.includes(tag.id) ? "bg-[#e95723] text-white" : "bg-[#0f1115] border border-[#22252e]"}`}
+                    className={`cursor-pointer ${selectedTagIds.includes(tag.id) ? "bg-[#e95723] text-white" : "bg-[#0f1115] border border-[#22252e] text-white"}`}
                   >
                     {selectedTagIds.includes(tag.id) && (
                       <Check className="h-3 w-3 mr-1" />
@@ -199,13 +215,7 @@ export default function CreatePostView({
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Body Content</label>
-              <Textarea
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                className="min-h-[200px] bg-[#16181d] border-[#22252e]"
-                minLength={20}
-                required
-              />
+              <EditorContent editor={editor} className="min-h-[200px] bg-[#16181d] border-[#22252e] rounded-md p-2" />
               {fieldErrors.body && (
                 <p className="text-xs text-red-400">{fieldErrors.body[0]}</p>
               )}

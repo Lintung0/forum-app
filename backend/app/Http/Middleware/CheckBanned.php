@@ -8,12 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckBanned
 {
-    /**
-     * Middleware ini memblokir user yang statusnya banned.
-     * Gunakan bersama 'auth:sanctum' untuk semua protected routes.
-     *
-     * Contoh: Route::middleware(['auth:sanctum', 'banned'])
-     */
+    
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();

@@ -120,9 +120,33 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[#090a0f] text-foreground selection:bg-[#e95723]/30;
   }
   html {
-    @apply font-sans;
+    @apply font-sans scroll-smooth;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-[#13151a] border border-gray-800;
+  }
+  
+  .premium-gradient {
+    @apply bg-[#e95723];
+  }
+
+  .text-glow {
+    text-shadow: none;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
   }
 }

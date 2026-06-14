@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\FollowController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PostController;
 use App\Http\Controllers\Api\V1\ReportController;
+use App\Http\Controllers\Api\V1\StatsController;
 use App\Http\Controllers\Api\V1\TagController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\VoteController;
@@ -45,6 +46,7 @@ Route::prefix('v1/auth')->name('api.v1.auth.')->group(function () {
 
 
 Route::prefix('v1')->name('api.v1.')->middleware('auth.optional')->group(function () {
+    Route::get('stats',                 [StatsController::class, 'index'])->name('stats');
     Route::get('categories',            [CategoryController::class, 'index'])->name('categories.index');
     Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
 
@@ -82,8 +84,8 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'banned', 'thr
     Route::post('posts/{post}/comments/{comment}/likes', [LikeController::class, 'store']);
 
 
-    Route::post('votes',          [VoteController::class, 'store']);
-    Route::delete('votes/{vote}', [VoteController::class, 'destroy']);
+    Route::post('votes',          [VoteController::class, 'store'])->middleware('throttle:30,1');
+    Route::delete('votes/{vote}', [VoteController::class, 'destroy'])->middleware('throttle:30,1');
 
     
     Route::apiResource('bookmarks', BookmarkController::class)->only(['index', 'store', 'destroy']);
@@ -100,10 +102,13 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'banned', 'thr
     Route::patch('notifications/read-all',             [NotificationController::class, 'markAllRead']);
     Route::patch('notifications/{notification}/read',  [NotificationController::class, 'markRead']); 
 
-    Route::post('reports', [ReportController::class, 'store']);
+    Route::post('reports', [ReportController::class, 'store'])->middleware('throttle:10,1');
 });
 
 Route::prefix('v1/admin')->name('api.v1.admin.')->middleware(['auth:sanctum', 'banned', 'role:admin', 'throttle:60,1'])->group(function () {
+    Route::get('dashboard-stats',          [AdminController::class, 'dashboardStats'])->name('dashboard-stats'); 
+    Route::get('users',                    [AdminController::class, 'index'])->name('users.index'); 
+    Route::get('categories',               [CategoryController::class, 'adminIndex'])->name('categories.index'); 
     Route::post('categories',              [CategoryController::class, 'store'])->name('categories.store');
     Route::put('categories/{category}',    [CategoryController::class, 'update'])->name('categories.update');
     Route::patch('categories/{category}',  [CategoryController::class, 'update']);

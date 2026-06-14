@@ -17,11 +17,14 @@
     vote_score: number;
     is_accepted: boolean;
     created_at: string;
+    parent_id?: string | null;
     user?: {
       id?: string;
       username: string;
       avatar_url?: string | null;
     };
+    replies?: Comment[];
+    replies_count?: number;
   }
 
   export interface PostDetail {

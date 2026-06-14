@@ -12,15 +12,11 @@ class UserRole extends Pivot
 
     protected $table = 'user_roles';
 
-    /**
-     * Pivot ini punya ID sendiri (UUID) sesuai ERD.
-     */
+    
     public $incrementing = false;
     protected $keyType   = 'string';
 
-    /**
-     * Tidak ada timestamps standar, hanya assigned_at.
-     */
+    
     public $timestamps = false;
 
     protected $fillable = [
@@ -37,9 +33,7 @@ class UserRole extends Pivot
         ];
     }
 
-    /**
-     * Auto-set assigned_at dan UUID sebelum insert.
-     */
+    
     protected static function boot(): void
     {
         parent::boot();

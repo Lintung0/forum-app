@@ -38,9 +38,9 @@ class Post extends Model
         ];
     }
 
-    // ────────────────────────────────────────────────────────
-    // RELATIONSHIPS
-    // ────────────────────────────────────────────────────────
+    
+    
+    
 
     public function user(): BelongsTo
     {
@@ -68,9 +68,7 @@ class Post extends Model
         return $this->hasMany(Comment::class, 'post_id');
     }
 
-    /**
-     * Top-level comments only (bukan reply), diurutkan terlama dulu.
-     */
+    
     public function topLevelComments(): HasMany
     {
         return $this->hasMany(Comment::class, 'post_id')
@@ -101,9 +99,9 @@ class Post extends Model
         return $this->hasMany(Bookmark::class, 'post_id');
     }
 
-    // ────────────────────────────────────────────────────────
-    // HELPER METHODS
-    // ────────────────────────────────────────────────────────
+    
+    
+    
 
     public function isOwnedBy(User $user): bool
     {
@@ -125,7 +123,7 @@ class Post extends Model
         return $this->status === 'deleted';
     }
 
-    /** Increment view count (langsung ke DB, tidak dirty-check model). */
+    
     public function incrementViewCount(): void
     {
         $this->increment('view_count');

@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://127.0.0.1:8000";
+  process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:8000";
 
 export default function EditPostPage() {
   const router = useRouter();

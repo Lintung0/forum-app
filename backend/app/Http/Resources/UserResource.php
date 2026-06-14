@@ -7,11 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
+    
     public function toArray(Request $request): array
     {
         return [
@@ -23,6 +19,8 @@ class UserResource extends JsonResource
             'reputation_points' => $this->reputation_points,
             'level' => $this->level,
             'is_banned' => (bool) $this->is_banned,
+            'posts_count' => $this->posts_count ?? $this->posts()->count(),
+            'accepted_answers_count' => $this->comments()->where('is_accepted', true)->count(),
             'roles' => $this->whenLoaded('roles', function () {
                 return $this->roles->map(function ($role) {
                     return [

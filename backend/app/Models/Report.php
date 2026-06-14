@@ -5,6 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
+use App\Models\Post;
+use App\Models\Comment;
+use App\Models\User;
 
 class Report extends Model
 {
@@ -40,5 +44,28 @@ class Report extends Model
     public function resolver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'resolved_by');
+    }
+
+    
+    public function getContentPreviewAttribute(): ?string
+    {
+        if ($this->target_type === 'post') {
+            $post = Post::find($this->target_id);
+            return $post ? Str::limit(strip_tags($post->body), 100) : null;
+        } elseif ($this->target_type === 'comment') {
+            $comment = Comment::find($this->target_id);
+            return $comment ? Str::limit(strip_tags($comment->body), 100) : null;
+        } elseif ($this->target_type === 'user') {
+            $user = User::find($this->target_id);
+            return $user ? Str::limit($user->bio ?? $user->username, 100) : null;
+        }
+
+        return null;
+    }
+
+    
+    public function getReportedTypeAttribute(): string
+    {
+        return Str::headline($this->target_type);
     }
 }

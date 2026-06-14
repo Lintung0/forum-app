@@ -29,9 +29,9 @@ class CommentEditHistory extends Model
         ];
     }
 
-    // ────────────────────────────────────────────────────────
-    // RELATIONSHIPS
-    // ────────────────────────────────────────────────────────
+    
+    
+    
 
     public function comment(): BelongsTo
     {
@@ -43,9 +43,9 @@ class CommentEditHistory extends Model
         return $this->belongsTo(User::class, 'edited_by');
     }
 
-    // ────────────────────────────────────────────────────────
-    // BOOT
-    // ────────────────────────────────────────────────────────
+    
+    
+    
 
     protected static function boot(): void
     {

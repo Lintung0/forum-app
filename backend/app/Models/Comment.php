@@ -33,9 +33,9 @@ class Comment extends Model
         ];
     }
 
-    // ────────────────────────────────────────────────────────
-    // RELATIONSHIPS
-    // ────────────────────────────────────────────────────────
+    
+    
+    
 
     public function post(): BelongsTo
     {
@@ -47,13 +47,13 @@ class Comment extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /** Parent comment (null jika top-level). */
+    
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Comment::class, 'parent_id');
     }
 
-    /** Direct replies ke comment ini (1 level). */
+    
     public function replies(): HasMany
     {
         return $this->hasMany(Comment::class, 'parent_id')
@@ -71,9 +71,9 @@ class Comment extends Model
         return $this->hasMany(CommentEditHistory::class, 'comment_id')
             ->orderByDesc('edited_at');
     }
-    // ────────────────────────────────────────────────────────
-    // HELPER METHODS
-    // ────────────────────────────────────────────────────────
+    
+    
+    
 
     public function isOwnedBy(User $user): bool
     {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\NotificationResource;
 use App\Models\ForumNotification;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -15,11 +16,14 @@ class NotificationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $notifications = ForumNotification::where('user_id', $request->user()->id)
-            ->with('actor:id,username,avatar_url')
+            ->with(['actor:id,username,avatar_url', 'reference']) 
             ->latest()
             ->paginate(20);
 
-        return $this->paginatedResponse($notifications, 'Notifikasi berhasil diambil.');
+        return $this->paginatedResponse(
+            NotificationResource::collection($notifications),
+            'Notifikasi berhasil diambil.'
+        );
     }
 
     public function markRead(Request $request, string $id): JsonResponse

@@ -14,7 +14,7 @@ class Tag extends Model
 
     protected $table = 'tags';
 
-    /** Hanya punya created_at (sesuai ERD). */
+    
     public $timestamps = false;
 
     protected $fillable = [
@@ -37,9 +37,9 @@ class Tag extends Model
         ];
     }
 
-    // ────────────────────────────────────────────────────────
-    // RELATIONSHIPS
-    // ────────────────────────────────────────────────────────
+    
+    
+    
 
     public function posts(): BelongsToMany
     {
@@ -47,9 +47,9 @@ class Tag extends Model
             ->using(PostTag::class);
     }
 
-    // ────────────────────────────────────────────────────────
-    // BOOT
-    // ────────────────────────────────────────────────────────
+    
+    
+    
 
     protected static function boot(): void
     {

@@ -10,7 +10,7 @@ class RegisterRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Endpoint publik
+        return true; 
     }
 
     public function rules(): array
@@ -22,7 +22,7 @@ class RegisterRequest extends FormRequest
                 'min:3',
                 'max:100',
                 'unique:users,username',
-                // Hanya huruf, angka, dan underscore
+                
                 'regex:/^[a-zA-Z0-9_]+$/',
             ],
             'email' => [
@@ -37,7 +37,7 @@ class RegisterRequest extends FormRequest
                 'string',
                 'min:8',
                 'max:255',
-                'confirmed', // Membutuhkan field 'password_confirmation'
+                'confirmed', 
             ],
         ];
     }
@@ -59,9 +59,7 @@ class RegisterRequest extends FormRequest
         ];
     }
 
-    /**
-     * Override untuk pastikan response validation error dalam format JSON seragam.
-     */
+    
     protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(response()->json([

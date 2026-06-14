@@ -3,11 +3,22 @@ import { MessageSquare, Clock, TrendingUp, Filter, Flame } from 'lucide-react';
 import { PostSummary } from './type';
 import PostCard from './postcard'; 
 
-export default async function PostsPage() {
+export default async function PostsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   let posts: PostSummary[] = [];
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/v1/posts', {
+    const url = q 
+      ? `${API_URL}/posts?q=${encodeURIComponent(q)}`
+      : `${API_URL}/posts`;
+      
+    const response = await fetch(url, {
       cache: 'no-store',
     });
 

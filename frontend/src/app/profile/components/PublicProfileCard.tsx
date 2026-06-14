@@ -92,7 +92,7 @@ export default function ProfileCard({ user }: PublicProfileCardProps) {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('auth_token');
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://127.0.0.1:8000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8000';
 
       const res = await fetch(
         `${BACKEND_URL}/api/v1/users/${user.username}/${willFollow ? 'follow' : 'unfollow'}`,
@@ -134,7 +134,7 @@ export default function ProfileCard({ user }: PublicProfileCardProps) {
 
     try {
       const token = localStorage.getItem('auth_token');
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://127.0.0.1:8000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8000';
 
       const res = await fetch(`${BACKEND_URL}/api/v1/users/${user.username}`, {
         method: 'GET',
@@ -173,101 +173,105 @@ export default function ProfileCard({ user }: PublicProfileCardProps) {
 
   return (
     <>
-      <Card className="bg-[#13151a] border border-[#1e222b] rounded-xl p-5 text-center space-y-4 w-full relative overflow-hidden">
+      <Card className="bg-[#13151a] border border-[#1e222b] rounded-2xl p-6 text-center space-y-5 w-full relative overflow-hidden shadow-2xl shadow-black/30">
         
-        {/* Avatar & Badge Level */}
-        <div className="relative w-24 h-24 mx-auto mt-2">
-          <Avatar className="w-24 h-24 border-2 border-[#e95723]/20">
+        {}
+        <div className="relative w-28 h-28 mx-auto group">
+          <div className="absolute inset-0 bg-[#e95723]/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <Avatar className="w-28 h-28 border-4 border-[#1e222b] group-hover:border-[#e95723] transition-all duration-300 relative z-10 shadow-2xl">
             <AvatarImage src={user.avatar_url ?? undefined} />
-            <AvatarFallback className="text-2xl bg-[#2c323f] text-white font-bold">
+            <AvatarFallback className="text-3xl bg-[#1a1d24] text-gray-300 font-black">
               {user.username?.[0]?.toUpperCase() ?? 'U'}
             </AvatarFallback>
           </Avatar>
-          <span className="absolute bottom-0 right-0 bg-[#e95723] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-[#13151a]">
+          <span className="absolute bottom-1 right-1 bg-[#e95723] text-white text-[11px] font-black px-2.5 py-1 rounded-full border-2 border-[#13151a] z-20 shadow-lg">
             LVL {user.level ?? 1}
           </span>
         </div>
 
-        {/* Informasi Identitas */}
-        <div className="space-y-1">
-          <h2 className="text-lg font-bold text-white tracking-tight">@{user.username}</h2>
-          <p className="text-xs text-gray-400 font-normal max-w-[200px] mx-auto leading-relaxed">
-            {user.bio ?? 'No bio description written yet.'}
+        {}
+        <div className="space-y-2">
+          <h2 className="text-xl font-black text-white tracking-tight leading-none">@{user.username}</h2>
+          <div className="bg-[#e95723]/10 text-[#e95723] text-[10px] font-black px-3 py-1 rounded-full inline-block uppercase tracking-wider">
+            Active Member
+          </div>
+          <p className="text-sm text-gray-400 font-medium max-w-[240px] mx-auto leading-relaxed pt-2">
+            {user.bio ?? 'This user hasn\'t written a bio yet.'}
           </p>
         </div>
 
-        {/* Tombol Follow / Unfollow */}
+        {}
         <Button
           onClick={handleFollowToggle}
           disabled={isLoading}
-          className={`w-full text-xs font-bold h-9 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+          className={`w-full text-xs font-black h-10 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg ${
             isFollowed
-              ? 'bg-[#1e222b] border border-[#2c323f] text-gray-300 hover:bg-red-950/30 hover:text-red-400 hover:border-red-900/50'
-              : 'bg-[#e95723] hover:bg-[#d84a1a] text-white'
+              ? 'bg-[#1a1d24] border border-[#22252e] text-gray-300 hover:bg-red-950/20 hover:text-red-400 hover:border-red-900/40 shadow-none'
+              : 'bg-[#e95723] hover:bg-[#d84a1a] text-white shadow-[#e95723]/20'
           }`}
         >
           {isFollowed ? (
-            <><UserCheck className="h-3.5 w-3.5" /> Following</>
+            <><UserCheck className="h-4 w-4" /> Following</>
           ) : (
-            <><UserPlus className="h-3.5 w-3.5" /> Follow</>
+            <><UserPlus className="h-4 w-4" /> Follow User</>
           )}
         </Button>
 
-        {/* Baris 1 — Reputasi & Solusi */}
-        <div className="grid grid-cols-2 gap-2 w-full text-center">
-          <div className="p-2.5 bg-[#16181d] rounded-xl border border-[#22252e]">
-            <div className="flex items-center justify-center gap-1 mb-0.5">
-              <Star className="h-3 w-3 text-yellow-500" />
-              <p className="text-xs font-black text-white">{user.reputation_points}</p>
+        {}
+        <div className="grid grid-cols-2 gap-3 w-full">
+          <div className="p-3 bg-[#1a1d24]/50 rounded-2xl border border-[#22252e] shadow-inner">
+            <div className="flex items-center justify-center gap-1.5 mb-0.5">
+              <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500/20" />
+              <p className="text-sm font-black text-white tabular-nums">{user.reputation_points}</p>
             </div>
-            <p className="text-[9px] text-gray-500 font-bold tracking-wide uppercase">Reputasi</p>
+            <p className="text-[9px] text-gray-500 font-black tracking-widest uppercase mt-1">Reputation</p>
           </div>
-          <div className="p-2.5 bg-[#16181d] rounded-xl border border-[#22252e]">
-            <div className="flex items-center justify-center gap-1 mb-0.5">
-              <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-              <p className="text-xs font-black text-[#e95723]">{acceptedCount}</p>
+          <div className="p-3 bg-[#1a1d24]/50 rounded-2xl border border-[#22252e] shadow-inner">
+            <div className="flex items-center justify-center gap-1.5 mb-0.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+              <p className="text-sm font-black text-[#e95723] tabular-nums">{acceptedCount}</p>
             </div>
-            <p className="text-[9px] text-gray-500 font-bold tracking-wide uppercase">Solusi</p>
+            <p className="text-[9px] text-gray-500 font-black tracking-widest uppercase mt-1">Solutions</p>
           </div>
         </div>
 
-        {/* Baris 2 — Followers, Following, Posts */}
-        <div className="grid grid-cols-3 gap-1 bg-[#16181d] border border-[#1e222b] rounded-xl p-2.5 text-center">
+        {}
+        <div className="grid grid-cols-3 gap-2 bg-[#0f1115] border border-[#1e222b] rounded-2xl p-3 shadow-inner">
           <div
-            className="cursor-pointer hover:bg-[#1e222b] py-1 rounded-lg transition-colors group"
+            className="cursor-pointer hover:bg-[#1a1d24] py-1.5 rounded-xl transition-all group"
             onClick={() => openUsersModal('followers')}
           >
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide group-hover:text-gray-400">Pengikut</p>
-            <p className="text-sm font-extrabold text-white tabular-nums mt-0.5 group-hover:text-[#e95723]">{followersCount}</p>
+            <p className="text-[10px] font-black text-gray-600 uppercase tracking-tight group-hover:text-gray-400">Followers</p>
+            <p className="text-sm font-black text-white tabular-nums mt-0.5 group-hover:text-[#e95723]">{followersCount}</p>
           </div>
           <div
-            className="cursor-pointer hover:bg-[#1e222b] py-1 rounded-lg transition-colors group"
+            className="cursor-pointer hover:bg-[#1a1d24] py-1.5 rounded-xl transition-all group border-x border-[#1e222b]"
             onClick={() => openUsersModal('following')}
           >
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide group-hover:text-gray-400">Mengikuti</p>
-            <p className="text-sm font-extrabold text-white tabular-nums mt-0.5 group-hover:text-[#e95723]">{user.following_count}</p>
+            <p className="text-[10px] font-black text-gray-600 uppercase tracking-tight group-hover:text-gray-400">Following</p>
+            <p className="text-sm font-black text-white tabular-nums mt-0.5 group-hover:text-[#e95723]">{user.following_count}</p>
           </div>
-          <div className="py-1">
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Posts</p>
-            <p className="text-sm font-extrabold text-white tabular-nums mt-0.5">{user.posts_count}</p>
+          <div className="py-1.5">
+            <p className="text-[10px] font-black text-gray-600 uppercase tracking-tight">Posts</p>
+            <p className="text-sm font-black text-white tabular-nums mt-0.5">{user.posts_count}</p>
           </div>
         </div>
 
-        {/* Tanggal Bergabung */}
-        <div className="flex items-center justify-center gap-1.5 text-[10px] text-gray-500 font-medium pt-1">
-          <Calendar className="h-3 w-3 text-gray-600" />
-          <span>Member sejak {formatMonthYear(user.created_at)}</span>
+        {}
+        <div className="flex items-center justify-center gap-2 text-[10px] text-gray-600 font-bold uppercase tracking-tight pt-1">
+          <Calendar className="h-3.5 w-3.5 text-gray-700" />
+          <span>Joined {formatMonthYear(user.created_at)}</span>
         </div>
       </Card>
 
-      {/* Modal Followers / Following */}
+      {}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="bg-[#13151a] border border-[#1e222b] text-white max-w-sm rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold text-gray-200 flex items-center gap-2">
               <Users className="h-4 w-4 text-[#e95723]" /> {modalTitle}
             </DialogTitle>
-            {/* SOLUSI WARNING ACCESSIBILITY: Menghapus error log console dengan sr-only */}
+            {}
             <DialogDescription className="sr-only">
               Daftar akun eksternal pengguna platform yang terhubung ke dalam daftar pertemanan profil.
             </DialogDescription>

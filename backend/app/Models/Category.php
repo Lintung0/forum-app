@@ -15,9 +15,7 @@ class Category extends Model
 
     protected $table = 'categories';
 
-    /**
-     * Hanya punya created_at, tidak ada updated_at (sesuai ERD).
-     */
+    
     public $timestamps = false;
 
     protected $fillable = [
@@ -34,31 +32,31 @@ class Category extends Model
         ];
     }
 
-    // ────────────────────────────────────────────────────────
-    // RELATIONSHIPS
-    // ────────────────────────────────────────────────────────
+    
+    
+    
 
-    /** Parent category (null jika root). */
+    
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'parent_id');
     }
 
-    /** Child categories. */
+    
     public function children(): HasMany
     {
         return $this->hasMany(Category::class, 'parent_id');
     }
 
-    /** Posts dalam kategori ini. */
+    
     public function posts(): HasMany
     {
         return $this->hasMany(Post::class, 'category_id');
     }
 
-    // ────────────────────────────────────────────────────────
-    // BOOT
-    // ────────────────────────────────────────────────────────
+    
+    
+    
 
     protected static function boot(): void
     {
@@ -68,7 +66,7 @@ class Category extends Model
             if (empty($model->created_at)) {
                 $model->created_at = now();
             }
-            // Auto-generate slug jika tidak diberikan
+            
             if (empty($model->slug)) {
                 $model->slug = Str::slug($model->name);
             }

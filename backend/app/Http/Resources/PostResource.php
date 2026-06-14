@@ -18,9 +18,12 @@ class PostResource extends JsonResource
             'status'             => $this->status,
             'view_count'  => intval($this->view_count ?? 0),
             'vote_score'  => intval($this->vote_score ?? 0),
+            'user_vote'   => $request->user() ? $this->votes()->where('user_id', $request->user()->id)->first()?->vote_type : null,
+            'is_bookmarked' => $request->user() ? $this->bookmarks()->where('user_id', $request->user()->id)->exists() : false,
+            'bookmark_id'   => $request->user() ? $this->bookmarks()->where('user_id', $request->user()->id)->first()?->id : null,
             'is_answered' => boolval($this->is_answered ?? false),
             'accepted_answer_id' => $this->accepted_answer_id,
-            // Relasi — hanya include jika sudah di-load (whenLoaded)
+            
             'user'               => $this->whenLoaded('user', function () {
                 return [
                     'id'                => $this->user->id,

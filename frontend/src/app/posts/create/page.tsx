@@ -1,7 +1,7 @@
 import CreatePostView from './CreatePostView';
 import { CategoryOption, TagOption } from './type';
 
-const API = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://127.0.0.1:8000';
+const API = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8000';
 
 export default async function CreatePostPage() {
   let categories: CategoryOption[] = [];
